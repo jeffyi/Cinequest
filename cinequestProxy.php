@@ -15,7 +15,7 @@ curl_setopt($session, CURLOPT_RETURNTRANSFER, true);
 $xml = curl_exec($session);
 
 // now echo the results
-header("Content-Type: text/xml");
+header("Content-Type: text/plain");
 
 echo $xml;
 curl_close($session);

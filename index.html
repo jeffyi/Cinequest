@@ -12,10 +12,11 @@
 		
 		var proxy = "cinequestProxy.php?";
 		var selectedTab = -1;
+		var festival;
 		
 		$(function(){
 
-			getDates();
+			getFestival();
 
 			$('#index').on('pageshow', function(){
 				var img = $('#img-cinequest');
@@ -95,46 +96,61 @@
 
 		});
 
-		function getDates(){
+		function getFestival(){
 			$.ajax({
 				type: "GET",
-				url: proxy + "type=schedules",
+				url: proxy + "type=festival",
 				data: "xml",
 				success: function(xml){
-					var currentDate = '';
-					var dateParts;
-					var count = -1;
-					var htmlString = '';
-					var tag;
-					var nextDate;
-					$(xml).find('schedule').each(function(){
-						tag = $(this);
-						nextDate = tag.attr('start_time').split(' ')[0];
-						if(nextDate !== currentDate)
-						{
-							dateParts = nextDate.split('-');
-							if(count > 0)
-							{
-								htmlString += '<span class="ui-li-count">' + count + '</span></a></li>' + '<li><a href="films-by-date.html">' + dateParts[1] + '-' + dateParts[2] + '-' + dateParts[0];
-							}
-							else
-							{
-								htmlString += '<li><a href="films-by-date.html">' + dateParts[1] + '-' + dateParts[2] + '-' + dateParts[0];
-							}
-							count = 1;
-							currentDate = nextDate;
-						}
-						else
-						{
-							count++;		
-						}
-					});
-					htmlString += '<span class="ui-li-count">' + count + '</span></a></li>';
-					$('#list-dates').append(htmlString);
-					$('#list-dates').listview('refresh');
+					festival = xml;
+					localStorage['festival'] = festival;
+					loadDates();
+					console.log('ajax success');
+				},
+				error: function(xhr){
+					console.log('ajax failed:' + xhr.statusText);
 				}
 			});
-			
+		}
+
+		function loadDates(){
+			var currentDate = '';
+			var dateParts;
+			var dateDisplay;
+			var count = -1;
+			var htmlString = '';
+			var tag;
+			var nextDate;
+			$(festival).find('schedule').each(function(){
+				tag = $(this);
+				nextDate = tag.attr('start_time').split(' ')[0];
+				if(nextDate !== currentDate)
+				{
+					dateParts = nextDate.split('-');
+					dateDisplay = dateParts[1] + '-' + dateParts[2] + '-' + dateParts[0];
+					if(count > 0)
+					{
+						htmlString += '</a><span class="ui-li-count">' + count + '</span></li>' + '<li><a onclick="listFilms(\'' + dateDisplay + '\')">' + dateDisplay;
+					}
+					else
+					{
+						htmlString += '<li><a onclick="listFilms(\'' + dateDisplay + '\')">' + dateDisplay;
+					}
+					count = 1;
+					currentDate = nextDate;
+				}
+				else
+				{
+					count++;		
+				}
+			});
+			htmlString += '</a><span class="ui-li-count">' + count + '</span></li>';
+			$('#list-dates').append(htmlString);
+			$('#list-dates').listview('refresh');
+		}
+
+		function listFilms(dateString){
+			alert(dateString);
 		}
 		
 		function getFilms(){
