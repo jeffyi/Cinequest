@@ -12,11 +12,14 @@
 		
 		var proxy = "cinequestProxy.php?";
 		var selectedTab = -1;
-		var festival;
+		var festival;			
+		var schedules;
+		var filmsDates = {};	// to store lists of films by date 
 		
 		$(function(){
 
 			getFestival();
+			getSchedules();
 
 			$('#index').on('pageshow', function(){
 				var img = $('#img-cinequest');
@@ -104,11 +107,10 @@
 				success: function(xml){
 					festival = xml;
 					localStorage['festival'] = festival;
-					loadDates();
-					console.log('ajax success');
+					console.log('ajax success for festival');
 				},
 				error: function(xhr){
-					console.log('ajax failed:' + xhr.statusText);
+					console.log('ajax failed for festival:' + xhr.statusText);
 				}
 			});
 		}
@@ -121,20 +123,23 @@
 			var htmlString = '';
 			var tag;
 			var nextDate;
-			$(festival).find('schedule').each(function(){
+			var startTime;
+			var endTime;
+			$(schedules).find('schedule').each(function(){
 				tag = $(this);
 				nextDate = tag.attr('start_time').split(' ')[0];
-				if(nextDate !== currentDate)
+				if (nextDate !== currentDate)
 				{
 					dateParts = nextDate.split('-');
 					dateDisplay = dateParts[1] + '-' + dateParts[2] + '-' + dateParts[0];
-					if(count > 0)
+					filmsDates[dateDisplay] = [];
+					if (count > 0)
 					{
-						htmlString += '</a><span class="ui-li-count">' + count + '</span></li>' + '<li><a onclick="listFilms(\'' + dateDisplay + '\')">' + dateDisplay;
+						htmlString += '</a><span class="ui-li-count">' + count + '</span></li>' + '<li><a href="filmsDates.html" onclick="listFilms(\'' + dateDisplay + '\')">' + dateDisplay;
 					}
 					else
 					{
-						htmlString += '<li><a onclick="listFilms(\'' + dateDisplay + '\')">' + dateDisplay;
+						htmlString += '<li><a href="filmsDates.html" onclick="listFilms(\'' + dateDisplay + '\')">' + dateDisplay;
 					}
 					count = 1;
 					currentDate = nextDate;
@@ -143,27 +148,44 @@
 				{
 					count++;		
 				}
+				startTime = tag.attr('start_time').split(' ')[1].split(':');
+				endTime = tag.attr('end_time').split(' ')[1].split(':');
+				filmsDates[dateDisplay].push({"pid": tag.attr('program_item_id'), "title": tag.attr('title'), "startTime": convertTime(startTime[0], startTime[1]), "endTime": convertTime(endTime[0], endTime[1])});
 			});
 			htmlString += '</a><span class="ui-li-count">' + count + '</span></li>';
 			$('#list-dates').append(htmlString);
+			localStorage['filmsDates'] = JSON.stringify(filmsDates);
 			$('#list-dates').listview('refresh');
 		}
 
+		function convertTime(h, m){
+			if (h < 12)
+			{
+				return h + ':' + m + ' AM';
+			}
+			else
+			{
+				return (h == 12 ? h + ':' + m + ' PM' : h - 12 + ':' + m + ' PM');
+			}
+		}
+
 		function listFilms(dateString){
-			alert(dateString);
+			alert(JSON.parse(localStorage['filmsDates'])[dateString][0]['title']);
 		}
 		
-		function getFilms(){
+		function getSchedules(){
 			$.ajax({
 				type: "GET",
 				url: proxy + "type=schedules",
 				data: "xml",
 				success: function(xml){
-					$(xml).find('schedule').each(function(){
-						var tag = $(this);
-						$('#list-films').append('<li><a id="pid-' + tag.attr('program_item_id') + '"><h3>' + tag.attr('title') + '</h3><p>' + tag.attr('start_time') + '&nbsp;&nbsp;&nbsp;' + tag.attr('venue') + '</p></a>' + '<a id="spid-' + tag.attr('program_item_id') + '"></a></li>');
-					});
-					$('#list-films').listview('refresh');
+					schedules = xml;
+					localStorage['schedules'] = xml;
+					console.log('ajax success for schedules');
+					loadDates();
+				},
+				error: function(xhr){
+					console.log('ajax failed for schedules' + xhr.statusText);		
 				}
 			});
 		}
@@ -182,7 +204,7 @@
 			<a href="#schedule" class="ui-btn-right" data-icon="grid">Schedule</a>
 			<div data-role="navbar">
 				<ul>
-					<li><a href="#" class="ui-btn-active ui-state-persist">Home</a></li>
+					<li><a class="ui-btn-active ui-state-persist">Home</a></li>
 					<li><a href="#festival">Festival</a></li>
 					<li><a href="#dvds">DVDs</a></li>
 				</ul>
@@ -206,7 +228,7 @@
 			<div data-role="navbar">
 				<ul>
 					<li><a href="#index">Home</a></li>
-					<li><a href="#" class="ui-btn-active ui-state-persist">Festival</a></li>
+					<li><a class="ui-btn-active ui-state-persist">Festival</a></li>
 					<li><a href="#dvds">DVDs</a></li>
 				</ul>
 			</div>
@@ -256,7 +278,7 @@
 				<ul>
 					<li><a href="#index">Home</a></li>
 					<li><a href="#festival">Festival</a></li>
-					<li><a href="#" class="ui-btn-active ui-state-persist">DVDs</a></li>
+					<li><a class="ui-btn-active ui-state-persist">DVDs</a></li>
 				</ul>
 			</div>
 		</div>
