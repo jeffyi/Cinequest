@@ -135,11 +135,11 @@
 					filmsDates[dateDisplay] = [];
 					if (count > 0)
 					{
-						htmlString += '</a><span class="ui-li-count">' + count + '</span></li>' + '<li><a href="filmsDates.html" onclick="listFilms(\'' + dateDisplay + '\')">' + dateDisplay;
+						htmlString += '</a><span class="ui-li-count">' + count + '</span></li>' + '<li><a href="#filmsDates" onclick="listFilms(\'' + dateDisplay + '\')">' + dateDisplay;
 					}
 					else
 					{
-						htmlString += '<li><a href="filmsDates.html" onclick="listFilms(\'' + dateDisplay + '\')">' + dateDisplay;
+						htmlString += '<li><a href="#filmsDates" onclick="listFilms(\'' + dateDisplay + '\')">' + dateDisplay;
 					}
 					count = 1;
 					currentDate = nextDate;
@@ -150,7 +150,7 @@
 				}
 				startTime = tag.attr('start_time').split(' ')[1].split(':');
 				endTime = tag.attr('end_time').split(' ')[1].split(':');
-				filmsDates[dateDisplay].push({"pid": tag.attr('program_item_id'), "title": tag.attr('title'), "startTime": convertTime(startTime[0], startTime[1]), "endTime": convertTime(endTime[0], endTime[1])});
+				filmsDates[dateDisplay].push({"pid": tag.attr('program_item_id'), "title": tag.attr('title'), "startTime": convertTime(startTime[0], startTime[1]), "endTime": convertTime(endTime[0], endTime[1]), "venue": tag.attr('venue')});
 			});
 			htmlString += '</a><span class="ui-li-count">' + count + '</span></li>';
 			$('#list-dates').append(htmlString);
@@ -170,7 +170,15 @@
 		}
 
 		function listFilms(dateString){
-			alert(JSON.parse(localStorage['filmsDates'])[dateString][0]['title']);
+			// alert(JSON.parse(localStorage['filmsDates'])[dateString][0]['title']);
+			var films = filmsDates[dateString];
+			var htmlString = '';
+			for (var i = 0; i < films.length; i++)
+			{
+				htmlString += '<li><a href="#filmDetail" onclick="showFilmDetail(\'' + films[i]['pid']  + '\')">' + '<h1>' + films[i]['title']  + '</h1><p><small>Time: ' + films[i]['startTime'] + ' - ' + films[i]['endTime'] + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + films[i]['venue']  + '</small></p></a><a onclick=""></a>'
+			}
+			$('#list-filmsDates').html(htmlString);
+			$('#list-filmsDates').listview('refresh');
 		}
 		
 		function getSchedules(){
@@ -201,7 +209,7 @@
 
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>Cinequest</h1>
-			<a href="#schedule" class="ui-btn-right" data-icon="grid">Schedule</a>
+			<a href="#schedule" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
 			<div data-role="navbar">
 				<ul>
 					<li><a class="ui-btn-active ui-state-persist">Home</a></li>
@@ -224,7 +232,7 @@
 
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>Cinequest</h1>
-			<a href="#schedule" class="ui-btn-right" data-icon="grid">Schedule</a>
+			<a href="#schedule" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
 			<div data-role="navbar">
 				<ul>
 					<li><a href="#index">Home</a></li>
@@ -247,7 +255,7 @@
 		<!-- Films page -->
 			<div id="films">
 				<br />
-				<ul id="list-dates" data-role="listview" data-inset="true" data-filter="true">
+				<ul id="list-dates" data-role="listview" data-inset="true">
 					
 				</ul>
 			</div>
@@ -273,7 +281,7 @@
 
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>Cinequest</h1>
-			<a href"#schedule" class="ui-btn-right" data-icon="grid">Schedule</a>
+			<a href"#schedule" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
 			<div data-role="navbar">
 				<ul>
 					<li><a href="#index">Home</a></li>
@@ -288,6 +296,37 @@
 		</div>
 
 	</div>
+
+<!-- FilmsDates page -->
+	<div data-role="page" id="filmsDates" data-add-back-btn="true">
+		
+		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
+			<h1>Cinequest</h1>
+			<a href="#schedule" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
+		</div>
+
+		<div data-role="content">
+			<ul id="list-filmsDates" data-role="listview" data-inset="true" data-filter="true" data-split-icon="plus">
+
+			</ul>
+		</div>
+
+	</div>
+
+<!-- FilmDetail page -->
+	<div data-role="page" id="filmDetail" data-add-back-btn="true">
+		
+		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
+			<h1>Cinequest</h1>
+			<a href="#schedule" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
+		</div>
+
+		<div data-role="content">
+			
+		</div>
+
+	</div>
+
 
 </body>
 
