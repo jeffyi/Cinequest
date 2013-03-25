@@ -17,13 +17,17 @@
 		var selectedTab = -1;
 		var festival;			// the festival object
 		var schedules;			// the Cinequest XML schedules file
+		var schedule;			// the schedule object
 		var filmsDates = {};	// to store lists of films by date 
 		
 		$(function(){
 
 			getFestival();
 			getSchedules();
-			schedule = localStorage['schedule'];
+			if (typeof localStorage['schedule'] != 'undefined')
+			{
+				schedule = JSON.parse(localStorage['schedule']);
+			}
 
 			$('#index').on('pageshow', function(){
 				var img = $('#img-cinequest');
@@ -150,7 +154,7 @@
 				{
 					count++;		
 				}
-				filmsDates[dateDisplay].push({"id": tag.attr('program_item_id'), "title": tag.attr('title'), "startTime": tag.attr('start_time'), "endTime": tag.attr('end_time'), "venue": tag.attr('venue')});
+				filmsDates[dateDisplay].push({"id": tag.attr('id'), "title": tag.attr('title'), "startTime": tag.attr('start_time'), "endTime": tag.attr('end_time'), "venue": tag.attr('venue')});
 			});
 			htmlString += '</a><span class="ui-li-count">' + count + '</span></li>';
 			$('#list-dates').append(htmlString);
@@ -174,13 +178,35 @@
 			var films = filmsDates[dateString];
 			var startTime;
 			var endTime;
+			var scheduled;
 			var htmlString = '';
 			for (var i = 0; i < films.length; i++)
 			{
+				scheduled = false;
 				startTime = films[i]['startTime'].split(' ')[1].split(':');
 				endTime = films[i]['endTime'].split(' ')[1].split(':');
-				// htmlString += '<tr><td><input type="checkbox" id="r' + films[i]['id']  + '" onclick="updateSchedule(\'' + films[i]['id']  + '\')" /></td><td id="' + films[i]['id']  + '" onclick="showFilmDetail(\'' + films[i]['id']  + '\')">' + '<strong>' + films[i]['title']  + '</strong><br /><small>Time: ' + films[i]['startTime'] + ' - ' + films[i]['endTime'] + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + films[i]['venue']  + '</small></td></tr>';
-				htmlString += '<li><a href="#filmDetail" id="' + films[i]['id']  + '" onclick="showFilmDetail(\'' + films[i]['id']  + '\')">' + '<h1>' + films[i]['title']  + '</h1><p><small>Time: ' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + films[i]['venue']  + '</small></p></a><a id="s' + films[i]['id']  + '" onclick="updateScheduleFilms(\'' + films[i]['id']  + '\', \'' + films[i]['title'].replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + films[i]['startTime'] + '\', \'' + films[i]['endTime'] + '\', \'' + films[i]['venue'] + '\')"></a></li>';
+				if (typeof schedule != 'undefined')
+				{
+					for (var j = 0; j < schedule['data'].length; j++)
+					{
+						if (films[i]['id'] == schedule['data'][j]['id'])
+						{
+							scheduled = true;	
+							break;
+						}
+					}
+				}
+				htmlString += '<li><a href="#filmDetail" id="' + films[i]['id'] + '"';
+				if (scheduled)
+				{
+					htmlString += ' style="background-color: rgb(195, 225, 245)" ';		
+				}
+				htmlString += ' onclick="showFilmDetail(\'' + films[i]['id']  + '\')">' + '<h1>' + films[i]['title']  + '</h1><p><small>Time: ' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + films[i]['venue']  + '</small>';
+				if (scheduled)
+				{
+					htmlString += '<span class="schedule"><small><br /><br />(Added to schedule)</small></span>';		
+				}
+				htmlString += '</p></a><a id="s' + films[i]['id']  + '" onclick="updateScheduleFilms(\'' + films[i]['id']  + '\', \'' + films[i]['title'].replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + films[i]['startTime'] + '\', \'' + films[i]['endTime'] + '\', \'' + films[i]['venue'] + '\')"></a></li>';
 			}
 			$('#name-filmsDates').html('<h2>Films on ' + dateString  + '</h2>');
 			$('#list-filmsDates').html(htmlString);
@@ -197,7 +223,7 @@
 			if (updateSchedule(id, title, startTime, endTime, venue) == 1)
 			{
 				$('#' + id + ' > p').append('<span class="schedule"><small><br /><br />(Added to schedule)</small></span>');
-				$('#' + id).css({'background-color': 'rgb(170, 210, 240)'});
+				$('#' + id).css({'background-color': 'rgb(195, 225, 245)'});
 			}
 			else
 			{
@@ -208,8 +234,7 @@
 		}
 
 		function updateSchedule(id, title, startTime, endTime, venue){
-			var schedule;
-			if (typeof localStorage['schedule'] == 'undefined')
+			if (typeof schedule == 'undefined')
 			{
 				schedule = {"data": [{
 					"id": id,
@@ -221,8 +246,6 @@
 				localStorage['schedule'] = JSON.stringify(schedule);
 				return 1;
 			}
-
-			schedule = JSON.parse(localStorage['schedule']);
 
 			for (var i = 0; i < schedule['data'].length; i++)
 			{
@@ -375,7 +398,7 @@
 
 			</div>
 
-			<ul id="list-filmsDates" data-role="listview" data-split-icon="grid">
+			<ul id="list-filmsDates" data-role="listview" data-split-icon="grid" data-filter="true">
 
 			</ul>
 		</div>
