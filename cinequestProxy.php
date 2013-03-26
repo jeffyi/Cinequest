@@ -15,7 +15,7 @@ curl_setopt($session, CURLOPT_RETURNTRANSFER, true);
 $xml = curl_exec($session);
 
 // now echo the results
-header("Content-Type: text/plain");
+header("Content-Type: application/xhtml+xml; charset=ISO-8859-1");
 
 echo $xml;
 curl_close($session);
