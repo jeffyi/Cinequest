@@ -121,11 +121,11 @@
 					filmsDates[dateDisplay] = [];
 					if (count > 0)
 					{
-						htmlString += '</a><span class="ui-li-count">' + count + '</span></li>' + '<li><a href="#filmsDates" onclick="listFilms(\'' + dateDisplay + '\')">' + dateDisplay;
+						htmlString += '</a><span class="ui-li-count">' + count + '</span></li>' + '<li><a href="#filmsDates" onclick="listFilms(\'' + dateDisplay + '\')" data-transition="pop">' + dateDisplay;
 					}
 					else
 					{
-						htmlString += '<li><a href="#filmsDates" onclick="listFilms(\'' + dateDisplay + '\')">' + dateDisplay;
+						htmlString += '<li><a href="#filmsDates" onclick="listFilms(\'' + dateDisplay + '\')" data-transition="pop">' + dateDisplay;
 					}
 					count = 1;
 					currentDate = nextDate;
@@ -176,17 +176,17 @@
 						}
 					}
 				}
-				htmlString += '<li><a href="#filmDetail" id="' + films[i]['id'] + '"';
+				htmlString += '<li><a id="' + films[i]['id'] + '"';
 				if (scheduled)
 				{
 					htmlString += ' style="background-color: rgb(195, 225, 245)" ';		
 				}
-				htmlString += ' onclick="showFilmDetail(\'' + films[i]['pid']  + '\')">' + '<h1>' + films[i]['title']  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + films[i]['venue']  + '</small>';
+				htmlString += ' onclick="updateScheduleFilms(\'' + films[i]['id']  + '\', \'' + films[i]['pid'] + '\', \'' + films[i]['title'].replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + films[i]['startTime'] + '\', \'' + films[i]['endTime'] + '\', \'' + films[i]['venue'] + '\')">' + '<h1>' + films[i]['title']  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + films[i]['venue']  + '</small>';
 				if (scheduled)
 				{
 					htmlString += '<span class="schedule"><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Scheduled)</small></span>';		
 				}
-				htmlString += '</p></a><a id="s' + films[i]['id']  + '" onclick="updateScheduleFilms(\'' + films[i]['id']  + '\', \'' + films[i]['pid'] + '\', \'' + films[i]['title'].replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + films[i]['startTime'] + '\', \'' + films[i]['endTime'] + '\', \'' + films[i]['venue'] + '\')"></a></li>';
+				htmlString += '</p></a><a href="#filmDetail" id="s' + films[i]['id']  + '" onclick="showFilmDetail(\'' + films[i]['pid']  + '\')" data-transition="pop"></a></li>';
 			}
 			$('#name-filmsDates').html('<h2>Films on ' + dateString  + '</h2>');
 			$('#list-filmsDates').html(htmlString);
@@ -202,6 +202,7 @@
 				if (tag.attr('id') == pid)
 				{
 					filmId = tag.find('film').attr('id');		
+					// alert(tag.children('film').length);
 				}
 			});
 			$(festival).find('films').each(function(){
@@ -455,7 +456,7 @@
 
 			</div>
 
-			<ul id="list-filmsDates" data-role="listview" data-split-icon="grid" data-filter="true" data-split-theme="a">
+			<ul id="list-filmsDates" data-role="listview" data-filter="true" data-split-theme="a">
 
 			</ul>
 		</div>
