@@ -80,7 +80,6 @@
 
 			$('#events').append('<h1>Test 2</h1>');
 			$('#forums').append('<h1>Test 3</h1>');
-
 		});
 
 		function getFestival(){
@@ -137,7 +136,7 @@
 				filmsDates[dateDisplay].push({"id": tag.attr('id'), "pid": tag.attr('program_item_id'), "title": tag.attr('title'), "startTime": tag.attr('start_time'), "endTime": tag.attr('end_time'), "venue": tag.attr('venue')});
 			});
 			htmlString += '</a><span class="ui-li-count">' + count + '</span></li>';
-			$('#list-dates').append(htmlString);
+			$('#list-dates').html(htmlString);
 			localStorage['filmsDates'] = JSON.stringify(filmsDates);
 			$('#list-dates').listview('refresh');
 		}
@@ -196,33 +195,89 @@
 		function showFilmDetail(pid){
 			localStorage['currentFilmDetail'] = pid;
 			var tag;
-			var filmId;
+			var films = [];
 			$(festival).find('program_item').each(function(){
-				tag = $(this);
-				if (tag.attr('id') == pid)
+				if ($(this).attr('id') == pid)
 				{
-					filmId = tag.find('film').attr('id');		
-					// alert(tag.children('film').length);
+					tag = $(this);
+					tag.find('film').each(function(){
+						films.push($(this).attr('id'));		
+					});
 				}
 			});
+
+			if (films.length == 0)
+			{
+				$('#div-multipleFilmDetails').empty();
+				$('#list-filmDetail').empty();
+				var htmlString ='<div align="center" style="padding: 0px 10px"><h3>' + tag.find('title').text() + '</h3></div><div style="padding: 0px 10px"><p><small>' + tag.find('description').text() + '</small></p></div>';
+				$('#top-filmDetail').html(htmlString);
+			}
+			else if (films.length == 1)
+			{
+				$('#div-multipleFilmDetails').empty();
+				showSingleFilmDetail(pid, films[0], true);		
+			}
+			else
+			{
+				showMultipleFilmDetails(pid, films, tag);
+			}
+
+		}
+
+		function showMultipleFilmDetails(pid, films, tag){
+			var htmlString = '<div align="center" style="padding: 0px 10px"><h3>' + tag.find('title').text() + '</h3></div><div style="padding: 0px 10px"><p><small>' + tag.find('description').text() + '</small></p></div><div align="center" style="padding: 0px 10px"><legend>' + films.length + ' Films available</legend><div data-role="controlgroup" data-type="horizontal">';
+			for (var i = 0; i < films.length; i++)
+			{
+				htmlString += '<input type="radio" id="radio-filmDetail' + i + '" onclick="showSingleFilmDetail(' + pid + ', ' + films[i] + ', ' + 'false' + ')" name="radio-filmDetail" value="' + i + '"';
+				if (i == 0)
+				{
+					htmlString += ' checked="checked" />';		
+				}
+				else
+				{
+					htmlString += ' />';		
+				}
+				htmlString += '<label for="radio-filmDetail' + i + '">' + (i + 1) + '</label>';
+			}
+			htmlString += '</div>';
+			$('#div-multipleFilmDetails').html(htmlString);
+			$('#div-multipleFilmDetails').trigger('create');
+			showSingleFilmDetail(pid, films[0], true);
+		}
+
+		function showSingleFilmDetail(pid, filmId, refreshListview){
+			localStorage['currentFilmDetail'] = pid;
+			var tag;
 			$(festival).find('films').each(function(){
 				$(this).find('film').each(function(){
 					tag = $(this);
 					if (tag.attr('id') == filmId)
 					{
-						var htmlString = '<div align="center"><h3>' + tag.find('title').text() + '</h3><img src="' + tag.find('imageURL').text()  + '" style="max-width: 100%" /></div>';
+						var htmlString = '<div align="center" style="padding: 0px 10px"><h3>' + tag.find('title').text() + '</h3></div><div align="center"><img src="' + tag.find('imageURL').text()  + '" style="max-width: 100%" /></div>';
 						htmlString += '<div style="padding: 0px 10px"><p><small>' + tag.find('description').text() + '</small></p><p><small><strong>Genre: </strong>' + tag.find('genre').text() + '<br /><strong>Director: </strong>' + tag.find('director').text() + '<br /><strong>Producer: </strong>' + tag.find('producer').text() + '<br /><strong>Cinematographer: </strong>' + tag.find('cinematographer').text() + '<br /><strong>Editor: </strong>' + tag.find('editor').text() + '<br /><strong>Cast: </strong>' + tag.find('cast').text() + '<br /><strong>Country: </strong>' + tag.find('country').text() + '<br /><strong>Language: </strong>' + tag.find('language').text() + '</small></p>';
-						htmlString += '<div align="center"><h4>Schedules</h4></div>';
+						htmlString += '<div align="center"><h4>Schedules (tap to add)</h4></div>';
 						$('#top-filmDetail').html(htmlString);
 
+						if (!refreshListview)
+						{
+							return false;
+						}
 						htmlString = '';
+						var scheduled;
+						var startTime;
+						var endTime;
+						var dateParts;
+						var dateDisplay;
 						$(schedules).find('schedule').each(function(){
 							var tag = $(this);
 							if (tag.attr('program_item_id') == pid)
 							{
-								var scheduled = false;
-								var startTime = tag.attr('start_time').split(' ')[1].split(':');
-								var endTime = tag.attr('end_time').split(' ')[1].split(':');
+								scheduled = false;
+								startTime = tag.attr('start_time').split(' ')[1].split(':');
+								endTime = tag.attr('end_time').split(' ')[1].split(':');
+								dateParts = tag.attr('start_time').split(' ')[0].split('-'); 
+								dateDisplay = dateParts[1] + '-' + dateParts[2] + '-' + dateParts[0];
 								if (typeof schedule != 'undefined')
 								{
 									for (var j = 0; j < schedule['data'].length; j++)
@@ -239,7 +294,7 @@
 								{
 									htmlString += ' style="background-color: rgb(195, 225, 245)" ';		
 								}
-								htmlString += ' onclick="updateScheduleFilms(\'fd' + tag.attr('id')  + '\', \'' + tag.attr('program_item_id') + '\', \'' + tag.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + tag.attr('startTime') + '\', \'' + tag.attr('endTime') + '\', \'' + tag.attr('venue') + '\')">' + '<h1>' + tag.attr('start_time').split(' ')[0] + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + tag.attr('venue') + '</small>';
+								htmlString += ' onclick="updateScheduleFilms(\'fd' + tag.attr('id')  + '\', \'' + tag.attr('program_item_id') + '\', \'' + tag.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + tag.attr('startTime') + '\', \'' + tag.attr('endTime') + '\', \'' + tag.attr('venue') + '\')">' + '<h1>' + dateDisplay + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + tag.attr('venue') + '</small>';
 								if (scheduled)
 								{
 									htmlString += '<span class="schedule"><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Scheduled)</small></span>';		
@@ -390,12 +445,12 @@
 		
 		<div data-role="content">
 			<div data-role="controlgroup" data-type="horizontal" align="center">
-				<label for="filmsTab">Films</label>
 				<input type="radio" id="filmsTab" name="festival-tabs" />
-				<label for="eventsTab">Events</label>
+				<label for="filmsTab">Films</label>
 				<input type="radio" id="eventsTab" name="festival-tabs" />
-				<label for="forumsTab">Forums</label>
+				<label for="eventsTab">Events</label>
 				<input type="radio" id="forumsTab" name="festival-tabs" />
+				<label for="forumsTab">Forums</label>
 			</div>
 
 		<!-- Films page -->
@@ -472,6 +527,8 @@
 		</div>
 
 		<div id="content-filmDetail" data-role="content" style="padding: 0px 0px">
+			<div id="div-multipleFilmDetails">
+			</div>
 			<div id="top-filmDetail">
 			</div>
 			<div style="padding: 0px 10px">
@@ -499,49 +556,6 @@
 </body>
 
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
