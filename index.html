@@ -138,7 +138,14 @@
 			htmlString += '</a><span class="ui-li-count">' + count + '</span></li>';
 			$('#list-dates').html(htmlString);
 			localStorage['filmsDates'] = JSON.stringify(filmsDates);
-			$('#list-dates').listview('refresh');
+			if ($('#list-dates').hasClass('ui-listview'))
+			{
+				$('#list-dates').listview('refresh');
+			}
+			else
+			{
+				$('#list-dates').trigger('create');
+			}
 		}
 
 		function convertTime(h, m){
@@ -189,7 +196,14 @@
 			}
 			$('#name-filmsDates').html('<h2>Films on ' + dateString  + '</h2>');
 			$('#list-filmsDates').html(htmlString);
-			$('#list-filmsDates').listview('refresh');
+			if ($('#list-filmsDates').hasClass('ui-listview'))
+			{
+				$('#list-filmsDates').listview('refresh');
+			}
+			else
+			{
+				$('#list-filmsDates').trigger('create');
+			}
 		}
 
 		function showFilmDetail(pid){
@@ -304,7 +318,14 @@
 							}
 						});
 						$('#list-filmDetail').html(htmlString);
-						$('#list-filmDetail').listview('refresh');
+						if ($('#list-filmDetail').hasClass('ui-listview'))
+						{
+							$('#list-filmDetail').listview('refresh');
+						}
+						else
+						{
+							$('#list-filmDetail').trigger('create');
+						}
 						return false;
 					}
 				});
@@ -392,6 +413,7 @@
 					localStorage['schedules'] = xml;
 					console.log('ajax success for schedules');
 					loadDates();
+					listFilms(localStorage['currentDateFilms']);
 				},
 				error: function(xhr){
 					console.log('ajax failed for schedules' + xhr.statusText);		
