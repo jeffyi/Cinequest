@@ -178,7 +178,7 @@
 				htmlString += '<li><a id="' + films[i]['id'] + '"';
 				if (scheduled)
 				{
-					htmlString += ' style="background-color: rgb(195, 225, 245)" ';		
+					htmlString += ' style="background-color: #387bbe" ';		
 				}
 				htmlString += ' onclick="updateScheduleFilms(\'' + films[i]['id']  + '\', \'' + films[i]['pid'] + '\', \'' + films[i]['title'].replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + films[i]['startTime'] + '\', \'' + films[i]['endTime'] + '\', \'' + films[i]['venue'] + '\')">' + '<h1>' + films[i]['title']  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + films[i]['venue']  + '</small>';
 				if (scheduled)
@@ -226,7 +226,7 @@
 		}
 
 		function showMultipleFilmDetails(pid, films, tag){
-			var htmlString = '<div align="center" style="padding: 0px 10px"><h3>' + tag.find('title').text() + '</h3></div><div style="padding: 0px 10px"><p><small>' + tag.find('description').text() + '</small></p></div><div align="center" style="padding: 0px 10px"><legend>' + films.length + ' Films available</legend><div data-role="controlgroup" data-type="horizontal">';
+			var htmlString = '<div align="center" style="padding: 0px 10px"><h3>' + tag.find('title').text() + '</h3></div><div style="padding: 0px 10px"><p><small>' + tag.find('description').text() + '</small></p></div><div align="center" style="padding: 0px 10px"><legend><strong>' + films.length + ' films available</strong></legend><div data-role="controlgroup" data-type="horizontal">';
 			for (var i = 0; i < films.length; i++)
 			{
 				htmlString += '<input type="radio" id="radio-filmDetail' + i + '" onclick="showSingleFilmDetail(' + pid + ', ' + films[i] + ', ' + 'false' + ')" name="radio-filmDetail" value="' + i + '"';
@@ -240,7 +240,7 @@
 				}
 				htmlString += '<label for="radio-filmDetail' + i + '">' + (i + 1) + '</label>';
 			}
-			htmlString += '</div>';
+			htmlString += '</div></div>';
 			$('#div-multipleFilmDetails').html(htmlString);
 			$('#div-multipleFilmDetails').trigger('create');
 			showSingleFilmDetail(pid, films[0], true);
@@ -292,7 +292,7 @@
 								htmlString += '<li><a id="fd' + tag.attr('id') + '"' 
 								if (scheduled)
 								{
-									htmlString += ' style="background-color: rgb(195, 225, 245)" ';		
+									htmlString += ' style="background-color: #387bbe" ';		
 								}
 								htmlString += ' onclick="updateScheduleFilms(\'fd' + tag.attr('id')  + '\', \'' + tag.attr('program_item_id') + '\', \'' + tag.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + tag.attr('startTime') + '\', \'' + tag.attr('endTime') + '\', \'' + tag.attr('venue') + '\')">' + '<h1>' + dateDisplay + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + tag.attr('venue') + '</small>';
 								if (scheduled)
@@ -317,9 +317,9 @@
 				if (updateSchedule(id.replace('fd', ''), pid, title, startTime, endTime, venue) == 1)
 				{
 					$('#' + id + ' > p').append('<span class="schedule"><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Scheduled)</small></span>');
-					$('#' + id).css({'background-color': 'rgb(195, 225, 245)'});
+					$('#' + id).css({'background-color': '#387bbe'});
 					$('#' + id.replace('fd', '') + ' > p').append('<span class="schedule"><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Scheduled)</small></span>');
-					$('#' + id.replace('fd', '')).css({'background-color': 'rgb(195, 225, 245)'});
+					$('#' + id.replace('fd', '')).css({'background-color': '#387bbe'});
 				}
 				else
 				{
@@ -334,7 +334,7 @@
 			if (updateSchedule(id, pid, title, startTime, endTime, venue) == 1)
 			{
 				$('#' + id + ' > p').append('<span class="schedule"><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Scheduled)</small></span>');
-				$('#' + id).css({'background-color': 'rgb(195, 225, 245)'});
+				$('#' + id).css({'background-color': '#387bbe'});
 			}
 			else
 			{
@@ -406,7 +406,7 @@
 
 <body>
 <!-- Index page -->
-	<div data-role="page" id="index" data-title="Cinequest - Home" >
+	<div data-role="page" id="index" data-title="Cinequest - Home" data-theme="a" data-content-theme="a">
 
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>Cinequest</h1>
@@ -429,7 +429,7 @@
 	</div>
 
 <!-- Festival page -->
-	<div data-role="page" id="festival" data-title="Cinequest - Festival" >
+	<div data-role="page" id="festival" data-title="Cinequest - Festival" data-theme="a" data-content-theme="a">
 
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>Cinequest</h1>
@@ -478,7 +478,7 @@
 	</div>
 
 <!-- DVDs page -->
-	<div data-role="page" id="dvds" data-title="Cinequest - DVDs" >
+	<div data-role="page" id="dvds" data-title="Cinequest - DVDs" data-theme="a" data-content-theme="a">
 
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>Cinequest</h1>
@@ -499,7 +499,7 @@
 	</div>
 
 <!-- FilmsDates page -->
-	<div data-role="page" id="filmsDates" data-add-back-btn="true">
+	<div data-role="page" id="filmsDates" data-add-back-btn="true"data-theme="a" data-content-theme="a">
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>Cinequest</h1>
@@ -511,7 +511,7 @@
 
 			</div>
 
-			<ul id="list-filmsDates" data-role="listview" data-filter="true" data-split-theme="a">
+			<ul id="list-filmsDates" data-role="listview" data-filter="true" data-inset="true" data-split-theme="a">
 
 			</ul>
 		</div>
@@ -519,7 +519,7 @@
 	</div>
 
 <!-- FilmDetail page -->
-	<div data-role="page" id="filmDetail" data-add-back-btn="true">
+	<div data-role="page" id="filmDetail" data-add-back-btn="true"data-theme="a" data-content-theme="a">
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>Cinequest</h1>
@@ -540,7 +540,7 @@
 	</div>
 
 <!-- Schedule page -->
-	<div data-role="page" id="schedule" data-add-back-btn="true">
+	<div data-role="page" id="schedule" data-add-back-btn="true"data-theme="a" data-content-theme="a">
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>My Cinequest<br /> Schedule</h1>
