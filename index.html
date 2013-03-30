@@ -36,6 +36,8 @@
 				if (selectedTab == -1 || selectedTab == 0)
 				{
 					$('#filmsTab').attr('checked', true).checkboxradio('refresh');
+					$('#eventsTab').checkboxradio('refresh');
+					$('#forumsTab').checkboxradio('refresh');
 					$('#events').hide();
 					$('#forums').hide();
 					$('#films').show();
@@ -44,6 +46,8 @@
 				else if (selectedTab == 1)
 				{
 					$('#eventsTab').attr('checked', true).checkboxradio('refresh');
+					$('#filmsTab').checkboxradio('refresh');
+					$('#forumsTab').checkboxradio('refresh');
 					$('#films').hide();
 					$('#forums').hide();
 					$('#events').show();
@@ -52,6 +56,8 @@
 				else if (selectedTab == 2)
 				{
 					$('#forumsTab').attr('checked', true).checkboxradio('refresh');
+					$('#eventsTab').checkboxradio('refresh');
+					$('#filmsTab').checkboxradio('refresh');
 					$('#events').hide();
 					$('#films').hide();
 					$('#forums').show();
@@ -64,18 +70,27 @@
 				$('#forums').hide();
 				$('#films').show();
 				selectedTab = 0;
+				$('#filmsTab').attr('checked', true).checkboxradio('refresh');
+				$('#eventsTab').checkboxradio('refresh');
+				$('#forumsTab').checkboxradio('refresh');
 			});
 			$('#eventsTab').click(function(){
 				$('#films').hide();
 				$('#forums').hide();
 				$('#events').show();
 				selectedTab = 1;
+				$('#eventsTab').attr('checked', true).checkboxradio('refresh');
+				$('#filmsTab').checkboxradio('refresh');
+				$('#forumsTab').checkboxradio('refresh');
 			});
 			$('#forumsTab').click(function(){
 				$('#events').hide();
 				$('#films').hide();
 				$('#forums').show();
 				selectedTab = 2;
+				$('#forumsTab').attr('checked', true).checkboxradio('refresh');
+				$('#eventsTab').checkboxradio('refresh');
+				$('#filmsTab').checkboxradio('refresh');
 			});
 
 			$('#events').append('<h1>Test 2</h1>');
@@ -511,7 +526,7 @@
 
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>Cinequest</h1>
-			<a href"#schedule" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
+			<a href="#schedule" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
 			<div data-role="navbar">
 				<ul>
 					<li><a href="#index">Home</a></li>
@@ -548,7 +563,7 @@
 	</div>
 
 <!-- FilmDetail page -->
-	<div data-role="page" id="filmDetail" data-add-back-btn="true"data-theme="a" data-content-theme="a">
+	<div data-role="page" id="filmDetail" data-title="Cinequest - Film Detail" data-add-back-btn="true"data-theme="a" data-content-theme="a">
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>Cinequest</h1>
@@ -569,7 +584,7 @@
 	</div>
 
 <!-- Schedule page -->
-	<div data-role="page" id="schedule" data-add-back-btn="true"data-theme="a" data-content-theme="a">
+	<div data-role="page" id="schedule" data-title="Cinequest - Schedule" data-add-back-btn="true"data-theme="a" data-content-theme="a">
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>My Cinequest<br /> Schedule</h1>
