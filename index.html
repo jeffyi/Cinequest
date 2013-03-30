@@ -187,7 +187,7 @@
 				{
 					htmlString += ' style="background-color: #387bbe" ';		
 				}
-				htmlString += ' onclick="updateScheduleFilms(\'' + films[i]['id']  + '\', \'' + films[i]['pid'] + '\', \'' + films[i]['title'].replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + films[i]['startTime'] + '\', \'' + films[i]['endTime'] + '\', \'' + films[i]['venue'] + '\')">' + '<h1>' + films[i]['title']  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + films[i]['venue']  + '</small>';
+				htmlString += ' onclick="updateScheduleFilms(\'' + films[i]['id']  + '\', \'' + films[i]['pid'] + '\', \'film\',  \'' + films[i]['title'].replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + films[i]['startTime'] + '\', \'' + films[i]['endTime'] + '\', \'' + films[i]['venue'] + '\')">' + '<h1>' + films[i]['title']  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + films[i]['venue']  + '</small>';
 				if (scheduled)
 				{
 					htmlString += '<span class="schedule"><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Scheduled)</small></span>';		
@@ -308,7 +308,7 @@
 								{
 									htmlString += ' style="background-color: #387bbe" ';		
 								}
-								htmlString += ' onclick="updateScheduleFilms(\'fd' + tag.attr('id')  + '\', \'' + tag.attr('program_item_id') + '\', \'' + tag.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + tag.attr('startTime') + '\', \'' + tag.attr('endTime') + '\', \'' + tag.attr('venue') + '\')">' + '<h1>' + dateDisplay + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + tag.attr('venue') + '</small>';
+								htmlString += ' onclick="updateScheduleFilms(\'fd' + tag.attr('id')  + '\', \'' + tag.attr('program_item_id') + '\', \'film\', \'' + tag.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + tag.attr('startTime') + '\', \'' + tag.attr('endTime') + '\', \'' + tag.attr('venue') + '\')">' + '<h1>' + dateDisplay + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + tag.attr('venue') + '</small>';
 								if (scheduled)
 								{
 									htmlString += '<span class="schedule"><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Scheduled)</small></span>';		
@@ -332,11 +332,12 @@
 			});
 		}
 
-		function updateScheduleFilms(id, pid, title, startTime, endTime, venue){
+		function updateScheduleFilms(id, pid, type, title, startTime, endTime, venue){
 			if (id.substring(0, 2) == 'fd')
 			{
-				if (updateSchedule(id.replace('fd', ''), pid, title, startTime, endTime, venue) == 1)
+				if ($('#' + id + ' span.schedule').length == 0)
 				{
+					updateSchedule(id.replace('fd', ''), pid, 'film', title, startTime, endTime, venue, true);
 					$('#' + id + ' > p').append('<span class="schedule"><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Scheduled)</small></span>');
 					$('#' + id).css({'background-color': '#387bbe'});
 					$('#' + id.replace('fd', '') + ' > p').append('<span class="schedule"><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Scheduled)</small></span>');
@@ -344,63 +345,69 @@
 				}
 				else
 				{
+					updateSchedule(id.replace('fd', ''), pid, 'film', title, startTime, endTime, venue, false);
 					$('#' + id + ' span.schedule').remove();
 					$('#' + id).css({'background-color': 'rgba(0, 0, 0, 0)'});
 					$('#' + id.replace('fd', '') + ' span.schedule').remove();
 					$('#' + id.replace('fd', '')).css({'background-color': 'rgba(0, 0, 0, 0)'});
-						
 				}
 				return;
 			}
-			if (updateSchedule(id, pid, title, startTime, endTime, venue) == 1)
+			if ($('#' + id + ' span.schedule').length == 0)
 			{
+				updateSchedule(id.replace('fd', ''), pid, 'film', title, startTime, endTime, venue, true);
 				$('#' + id + ' > p').append('<span class="schedule"><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Scheduled)</small></span>');
 				$('#' + id).css({'background-color': '#387bbe'});
 			}
 			else
 			{
+				updateSchedule(id.replace('fd', ''), pid, 'film', title, startTime, endTime, venue, false);
 				$('#' + id + ' span.schedule').remove();
 				$('#' + id).css({'background-color': 'rgba(0, 0, 0, 0)'});
-					
 			}
 		}
 
-		function updateSchedule(id, pid, title, startTime, endTime, venue){
-			if (typeof schedule == 'undefined')
+		function updateSchedule(id, pid, type, title, startTime, endTime, venue, isAdd){
+			if (isAdd)
 			{
-				schedule = {"data": [{
-					"id": id,
-					"pid": pid,
-					"title": title,
-					"startTime": startTime,
-					"endTime": endTime,
-					"venue": venue
-				}]};
-				localStorage['schedule'] = JSON.stringify(schedule);
-				return 1;
-			}
-
-			for (var i = 0; i < schedule['data'].length; i++)
-			{
-				if (schedule['data'][i]['id'] == id)
+				if (typeof schedule == 'undefined')
 				{
-					schedule['data'].splice(i, 1);
+					schedule = {"data": [{
+						"id": id,
+						"pid": pid,
+						"type": type,
+						"title": title,
+						"startTime": startTime,
+						"endTime": endTime,
+						"venue": venue
+					}]};
 					localStorage['schedule'] = JSON.stringify(schedule);
-					return 0;
+				}
+				else
+				{
+					schedule['data'].push({
+						"id": id,
+						"pid": pid,
+						"type": type,
+						"title": title,
+						"startTime": startTime,
+						"endTime": endTime,
+						"venue": venue
+					});
+					localStorage['schedule'] = JSON.stringify(schedule);
+				}			
+			}
+			else
+			{
+				for (var i = 0; i < schedule['data'].length; i++)
+				{
+					if (schedule['data'][i]['id'] == id)
+					{
+						schedule['data'].splice(i, 1);
+						localStorage['schedule'] = JSON.stringify(schedule);
+					}
 				}
 			}
-
-			schedule['data'].push({
-				"id": id,
-				"pid": pid,
-				"title": title,
-				"startTime": startTime,
-				"endTime": endTime,
-				"venue": venue
-			});
-			localStorage['schedule'] = JSON.stringify(schedule);
-			return 1;
-
 		}
 		
 		function getSchedules(){
