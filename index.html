@@ -153,11 +153,11 @@
 					filmsDates[dateDisplay] = [];
 					if (count > 0)
 					{
-						htmlString += '</a><span class="ui-li-count">' + count + '</span></li>' + '<li><a href="#filmsDates" onclick="listFilms(\'' + dateDisplay + '\')" data-transition="pop">' + weekDay[(new Date(dateParts[0], dateParts[1], dateParts[2])).getDay()] + ', ' + dateDisplay;
+						htmlString += '</a><span class="ui-li-count">' + count + '</span></li>' + '<li><a href="#filmsDates" onclick="listFilms(\'' + dateDisplay + '\')" data-transition="pop">' + weekDay[(new Date(dateParts[0], dateParts[1] - 1, dateParts[2])).getDay()] + ', ' + dateDisplay;
 					}
 					else
 					{
-						htmlString += '<li><a href="#filmsDates" onclick="listFilms(\'' + dateDisplay + '\')" data-transition="pop">' + weekDay[(new Date(dateParts[0], dateParts[1], dateParts[2])).getDay()] + ', ' + dateDisplay;
+						htmlString += '<li><a href="#filmsDates" onclick="listFilms(\'' + dateDisplay + '\')" data-transition="pop">' + weekDay[(new Date(dateParts[0], dateParts[1] - 1, dateParts[2])).getDay()] + ', ' + dateDisplay;
 					}
 					count = 1;
 					currentDate = nextDate;
@@ -245,7 +245,7 @@
 			if (filmId != 'null')
 			{
 				$('#div-multipleFilmDetails').empty();
-				showSingleFilmDetail(pid, filmId, true);
+				showSingleFilmDetail(pid, filmId, true, false);
 				return;
 			}
 			var tag;
@@ -271,7 +271,7 @@
 			else if (films.length == 1)
 			{
 				$('#div-multipleFilmDetails').empty();
-				showSingleFilmDetail(pid, films[0], true);		
+				showSingleFilmDetail(pid, films[0], true, false);		
 			}
 			else
 			{
@@ -284,7 +284,7 @@
 			var htmlString = '<div align="center" style="padding: 0px 10px"><h3>' + tag.find('title').text() + '</h3></div><div style="padding: 0px 10px"><p><small>' + tag.find('description').text() + '</small></p></div><div align="center" style="padding: 0px 10px"><legend><strong>' + films.length + ' films available</strong></legend><div data-role="controlgroup" data-type="horizontal">';
 			for (var i = 0; i < films.length; i++)
 			{
-				htmlString += '<input type="radio" id="radio-filmDetail' + i + '" onclick="showSingleFilmDetail(' + pid + ', ' + films[i] + ', ' + 'false' + ')" name="radio-filmDetail" value="' + i + '"';
+				htmlString += '<input type="radio" id="radio-filmDetail' + i + '" onclick="showSingleFilmDetail(' + pid + ', ' + films[i] + ', ' + 'false, true' + ')" name="radio-filmDetail" value="' + i + '"';
 				if (i == 0)
 				{
 					htmlString += ' checked="checked" />';		
@@ -298,12 +298,17 @@
 			htmlString += '</div></div>';
 			$('#div-multipleFilmDetails').html(htmlString);
 			$('#div-multipleFilmDetails').trigger('create');
-			showSingleFilmDetail(pid, films[0], true);
+			showSingleFilmDetail(pid, films[0], true, false);
 		}
 
-		function showSingleFilmDetail(pid, filmId, refreshListview){
+		function showSingleFilmDetail(pid, filmId, refreshListview, refreshRadio){
 			localStorage['currentFilmDetail'] = pid;
 			var tag;
+
+			if (refreshRadio){
+				$('#div-multipleFilmDetails input').checkboxradio('refresh');		
+			}
+
 			$(festival).find('films').each(function(){
 				$(this).find('film').each(function(){
 					tag = $(this);
@@ -349,7 +354,7 @@
 								{
 									htmlString += ' style="background-color: #387bbe" ';		
 								}
-								htmlString += ' onclick="updateScheduleFilms(\'fd' + tag.attr('id')  + '\', \'' + tag.attr('program_item_id') + '\', \'film\', \'' + tag.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + tag.attr('startTime') + '\', \'' + tag.attr('endTime') + '\', \'' + tag.attr('venue') + '\')">' + '<h1>' + weekDay[(new Date(dateParts[0], dateParts[1], dateParts[2])).getDay()] + ', ' + dateDisplay + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + tag.attr('venue') + '</small>';
+								htmlString += ' onclick="updateScheduleFilms(\'fd' + tag.attr('id')  + '\', \'' + tag.attr('program_item_id') + '\', \'film\', \'' + tag.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + tag.attr('startTime') + '\', \'' + tag.attr('endTime') + '\', \'' + tag.attr('venue') + '\')">' + '<h1>' + weekDay[(new Date(dateParts[0], dateParts[1] - 1, dateParts[2])).getDay()] + ', ' + dateDisplay + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + tag.attr('venue') + '</small>';
 								if (scheduled)
 								{
 									htmlString += '<span class="schedule"><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Scheduled)</small></span>';		
@@ -559,11 +564,11 @@
 		<div data-role="content">
 			<div data-role="controlgroup" data-type="horizontal" align="center">
 				<input type="radio" id="filmsTab" name="festival-tabs" />
-				<label for="filmsTab">Films</label>
+				<label for="filmsTab"><small>Films</small></label>
 				<input type="radio" id="eventsTab" name="festival-tabs" />
-				<label for="eventsTab">Events</label>
+				<label for="eventsTab"><small>Events</small></label>
 				<input type="radio" id="forumsTab" name="festival-tabs" />
-				<label for="forumsTab">Forums</label>
+				<label for="forumsTab"><small>Forums</small></label>
 			</div>
 
 		<!-- Films page -->
