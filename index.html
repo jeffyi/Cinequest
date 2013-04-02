@@ -605,8 +605,8 @@
 		}
 		
 		function loadForums(){	
+			var lastDate= new Date();
 			$(forums).find('schedule').each(function(index){
-				console.log('load forum each');
 				var item = $('<li/>');
 				var link = $('<a/>');
 				var tag = $(this);
@@ -643,8 +643,16 @@
 						getForum(programId);
 					});
 				})(id);
-				
-				item.html(link);			
+						
+				var sdate = s.toString().split(' ');
+				if((lastDate.getYear()!=s.getYear())||(lastDate.getMonth() != s.getMonth())||(lastDate.getDate() != s.getDate())){
+						var divider = $('<li/>');
+						divider.attr('data-role','list-divider');
+						divider.html(sdate[1]+' '+sdate[2]+','+sdate[3]);
+						$('#list-forums').append(divider);	
+						lastDate = s;
+					}
+				item.html(link);
 				$('#list-forums').append(item);				
 			});
 			if ($('#list-forums').hasClass('ui-listview'))
