@@ -20,6 +20,7 @@
 		var schedule;			// the schedule object
 		var allFilms;			
 		var dvds;
+		var forums;
 		var filmsDates = {};	// to store lists of films by date 
 		var weekDay;
 		
@@ -31,6 +32,7 @@
 			getSchedules();
 			getAllFilms();
 			getDVDs();
+			getForums();
 
 
 			if (typeof localStorage['selectedTab'] != 'undefined')
@@ -115,7 +117,6 @@
 			});
 
 			$('#events').append('<h1>Test 2</h1>');
-			$('#forums').append('<h1>Test 3</h1>');
 		});
 
 		function getFestival(){
@@ -543,7 +544,6 @@
 				
 				(function(filmId){
 					link.click(function(){
-						console.log('load dvd'+filmId);
 						window.location='#filmDetail';
 						$('#div-multipleFilmDetails').empty();
 						$('#top-filmDetail').empty();
@@ -604,6 +604,65 @@
 			$('#top-filmDetail').append(filmContentDiv);					
 		}
 		
+		function loadForums(){	
+			$(forums).find('schedule').each(function(index){
+				console.log('load forum each');
+				var item = $('<li/>');
+				var link = $('<a/>');
+				var tag = $(this);
+				var id = tag.attr('mobile_item_id');	
+				var title = $('<div/>').html(tag.attr('title'));				
+				title.css('text-overflow','ellipsis');
+				title.css('overflow','hidden');
+				var startTime = tag.attr('start_time');
+				var s = new Date(startTime);
+				var ampm = '';
+				if(s.getHours()>=12)
+					ampm='PM';
+				else
+				    ampm='AM';
+				var startTimeSpan = $('<span/>').html('Time: '+s.getHours()%12+':'+('0'+s.getMinutes()).slice(-2)+ampm);
+				var endTime =  tag.attr('end_time');
+				var e = new Date(endTime);
+				var endTimeSpan = $('<span/>').html(' - '+e.getHours()%12+':'+('0'+e.getMinutes()).slice(-2)+ampm);
+				var venue =  $('<span/>').html('Venue: '+tag.attr('venue'));
+				venue.css('margin','0 0 0 2em');
+				var lowerDiv = $('<div/>');
+				lowerDiv.append(startTimeSpan);
+				lowerDiv.append(endTimeSpan);
+				lowerDiv.append(venue);
+				link.append(title);
+				link.append($('<small/>').html(lowerDiv));	
+				(function(programId){
+					link.click(function(){
+						window.location='#filmDetail';
+						$('#div-multipleFilmDetails').empty();
+						$('#top-filmDetail').empty();
+						$('#list-filmDetail').empty();
+						
+						getForum(programId);
+					});
+				})(id);
+				
+				item.html(link);			
+				$('#list-forums').append(item);				
+			});
+			if ($('#list-forums').hasClass('ui-listview'))
+				$('#list-forums').listview('refresh');		
+			else
+				$('#list-forums').trigger('create');	
+		}
+		
+		function loadForum(forum){		
+			var dvdHandle = $(forum);
+			var title = $('<p/>').html($('<h3/>').html(dvdHandle.find('title').text()));	
+			title.css('text-align','center');
+			var description = $('<div/>').html($('<small/>').html(dvdHandle.find('description').text()));	
+			description.css('margin','0 1em 0 1em');
+			$('#top-filmDetail').append(title);
+			$('#top-filmDetail').append(description);	
+		}
+		
 		function getSchedules(){
 			$.ajax({
 				type: "GET",
@@ -658,8 +717,40 @@
 					var dvd = xml;
 					localStorage['dvd'+dvdId] = xml;
 					console.log('ajax success for dvds');
-					var title = $(dvd).find('title').text();
 					loadDVD(dvd);
+				},
+				error: function(xhr){
+					console.log('ajax failed for schedules' + xhr.statusText);		
+				}
+			});
+		}
+		
+		function getForums(d){
+			$.ajax({
+				type: "GET",
+				url: proxy + "type=xml&name=events",
+				success: function(xml){
+					var event = xml;
+					forums = $(event).find('forums');
+					localStorage['forums'] = xml;
+					console.log('ajax success for forums');
+					loadForums();
+				},
+				error: function(xhr){
+					console.log('ajax failed for schedules' + xhr.statusText);		
+				}
+			});
+		}
+		
+		function getForum(id){
+			$.ajax({
+				type: "GET",
+				url: proxy + "type=program_item&id="+id,
+				success: function(xml){
+					var forum = xml;
+					localStorage['forum'+id] = xml;
+					console.log('ajax success for forums');
+					loadForum(forum);
 				},
 				error: function(xhr){
 					console.log('ajax failed for schedules' + xhr.statusText);		
@@ -747,7 +838,10 @@
 
 		<!-- Forums page -->
 			<div id="forums" style="display:none">
-
+				<br />
+				<ul id="list-forums" data-role="listview" data-inset="true" data-filter="true" data-filter-placeholder="Filter forums...">
+					
+				</ul>
 			</div>
 
 
