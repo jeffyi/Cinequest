@@ -19,6 +19,7 @@
 		var schedules;			// the Cinequest XML schedules file
 		var schedule;			// the schedule object
 		var allFilms;			
+		var dvds;
 		var filmsDates = {};	// to store lists of films by date 
 		var weekDay;
 		
@@ -29,6 +30,7 @@
 			getFestival();
 			getSchedules();
 			getAllFilms();
+			getDVDs();
 
 
 			if (typeof localStorage['selectedTab'] != 'undefined')
@@ -528,6 +530,80 @@
 
 		}
 		
+		function loadDVDs(){	
+			var lastSort='0'
+			$(dvds).find('film').each(function(index){
+				var item = $('<li/>');
+				var link = $('<a/>');
+				var tag = $(this);
+				var id = tag.attr('id');	
+				var sort = tag.attr('sort');
+				var title = tag.find('title').text();
+				link.html(title);
+				
+				(function(filmId){
+					link.click(function(){
+						console.log('load dvd'+filmId);
+						window.location='#filmDetail';
+						$('#div-multipleFilmDetails').empty();
+						$('#top-filmDetail').empty();
+						$('#list-filmDetail').empty();
+						
+						getDVD(filmId);
+					});
+				})(id);
+				
+				item.html(link);
+				if(sort!=lastSort){
+					var divider = $('<li/>');
+					divider.attr('data-role','list-divider');
+					divider.html(sort);
+					$('#list-dvds').append(divider);	
+					lastSort = sort;
+				}
+				$('#list-dvds').append(item);				
+			});
+			$('#list-dvds:visible').listview('refresh');			
+		}
+		
+		function loadDVD(dvd){
+			var dvdHandle = $(dvd);
+			var title = $('<p/>').html(dvdHandle.find('title').text());			
+			var imageURL = dvdHandle.find('imageURL').text();
+			var image = $('<img/>').attr('src',imageURL);
+			image.css('max-width','100%');
+			var filmHeader = $('<div/>');
+			filmHeader.css('text-align','center');
+			filmHeader.append($('<div/>').html(title));
+			filmHeader.append($('<div/>').html(image));
+			var description = dvdHandle.find('description').text();			
+			var director = dvdHandle.find('director').text();
+			var producer = dvdHandle.find('producer').text();			
+			var editor = dvdHandle.find('editor').text();
+			var writer = dvdHandle.find('writer').text();
+			var cast = dvdHandle.find('cast').text();
+			var country = dvdHandle.find('country').text();
+			var language = dvdHandle.find('language').text();
+			var genre = dvdHandle.find('genre').text();
+			var film_info = dvdHandle.find('film_info').text();
+			var filmContent = $('<small/>');
+			filmContent.append($('<p/>').html(description));
+			filmContent.append($('<div/>').html('<strong>Director: </strong>'+director));
+			filmContent.append($('<div/>').html('<strong>Producer: </strong>'+producer));
+			filmContent.append($('<div/>').html('<strong>Editor: </strong>'+editor));
+			filmContent.append($('<div/>').html('<strong>Writer: </strong>'+writer));
+			filmContent.append($('<div/>').html('<strong>Cast: </strong>'+cast));
+			filmContent.append($('<div/>').html('<strong>Country: </strong>'+country));
+			filmContent.append($('<div/>').html('<strong>Language: </strong>'+language));
+			filmContent.append($('<div/>').html('<strong>Genre: </strong>'+genre));
+			filmContent.append($('<div/>').html('<strong>Film Info: </strong>'+film_info));
+			var filmContentDiv = $('<div/>');
+			filmContentDiv.css('margin','0 1em 0 1em');
+			filmContentDiv.html(filmContent);
+			$('#top-filmDetail').append($('<h3/>').html(filmHeader));
+			$('#top-filmDetail').append(filmContentDiv);					
+		}
+		
 		function getSchedules(){
 			$.ajax({
 				type: "GET",
@@ -558,6 +634,39 @@
 			});
 		}
 
+		function getDVDs(){
+			$.ajax({
+				type: "GET",
+				url: proxy + "type=dvds",
+				success: function(xml){
+					dvds = xml;
+					localStorage['dvds'] = xml;
+					console.log('ajax success for dvds');
+					loadDVDs();
+				},
+				error: function(xhr){
+					console.log('ajax failed for schedules' + xhr.statusText);		
+				}
+			});
+		}
+		
+		function getDVD(dvdId){
+			$.ajax({
+				type: "GET",
+				url: proxy + "type=dvd&id="+dvdId,
+				success: function(xml){
+					var dvd = xml;
+					localStorage['dvd'+dvdId] = xml;
+					console.log('ajax success for dvds');
+					var title = $(dvd).find('title').text();
+					loadDVD(dvd);
+				},
+				error: function(xhr){
+					console.log('ajax failed for schedules' + xhr.statusText);		
+				}
+			});
+		}
+		
 		function cp_schedule(){
 			$.mobile.changePage('#schedule');		
 			$.mobile.showPageLoadingMsg();
@@ -663,7 +772,9 @@
 		</div>
 
 		<div data-role="content">
-			
+			<ul id="list-dvds" data-role="listview" data-inset="true" data-filter="true" data-filter-placeholder="Filter dvds...">
+					
+			</ul>
 		</div>
 
 	</div>
