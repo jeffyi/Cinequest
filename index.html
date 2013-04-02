@@ -120,10 +120,19 @@
 			$.ajax({
 				type: "GET",
 				url: proxy + "type=festival",
+				beforeSend: function(xhr){
+					$('body').addClass('ui-loading');		
+				},
 				success: function(xml){
 					festival = xml;
 					localStorage['festival'] = festival;
 					console.log('ajax success for festival');
+					loadDates();
+					loadAllFilms();
+					if (typeof localStorage['currentDateFilms'] != 'undefined')
+					{
+						listFilms(localStorage['currentDateFilms']);
+					}
 					if (typeof localStorage['currentFilmDetail'] != 'undefined')
 					{
 						showFilmDetail(localStorage['currentFilmDetail'], localStorage['currentFilmId']);		
@@ -131,6 +140,9 @@
 				},
 				error: function(xhr){
 					console.log('ajax failed for festival:' + xhr.statusText);
+				},
+				complete: function(xhr){
+					$('body').removeClass('ui-loading');
 				}
 			});
 		}
@@ -153,11 +165,11 @@
 					filmsDates[dateDisplay] = [];
 					if (count > 0)
 					{
-						htmlString += '</a><span class="ui-li-count">' + count + '</span></li>' + '<li><a href="#filmsDates" onclick="listFilms(\'' + dateDisplay + '\')" data-transition="pop">' + weekDay[(new Date(dateParts[0], dateParts[1] - 1, dateParts[2])).getDay()] + ', ' + dateDisplay;
+						htmlString += '</a><span class="ui-li-count">' + count + '</span></li>' + '<li><a href="#filmsDates" onclick="listFilms(\'' + dateDisplay + '\')">' + weekDay[(new Date(dateParts[0], dateParts[1] - 1, dateParts[2])).getDay()] + ', ' + dateDisplay;
 					}
 					else
 					{
-						htmlString += '<li><a href="#filmsDates" onclick="listFilms(\'' + dateDisplay + '\')" data-transition="pop">' + weekDay[(new Date(dateParts[0], dateParts[1] - 1, dateParts[2])).getDay()] + ', ' + dateDisplay;
+						htmlString += '<li><a href="#filmsDates" onclick="listFilms(\'' + dateDisplay + '\')">' + weekDay[(new Date(dateParts[0], dateParts[1] - 1, dateParts[2])).getDay()] + ', ' + dateDisplay;
 					}
 					count = 1;
 					currentDate = nextDate;
@@ -225,7 +237,7 @@
 				{
 					htmlString += '<span class="schedule"><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Scheduled)</small></span>';		
 				}
-				htmlString += '</p></a><a href="#filmDetail" id="s' + films[i]['id']  + '" onclick="showFilmDetail(\'' + films[i]['pid']  + '\', \'null\')" data-transition="pop"></a></li>';
+				htmlString += '</p></a><a href="#filmDetail" id="s' + films[i]['id']  + '" onclick="showFilmDetail(\'' + films[i]['pid']  + '\', \'null\')"></a></li>';
 			}
 			$('#name-filmsDates').html('<h2>Films on ' + dateString  + '</h2>');
 			$('#list-filmsDates').html(htmlString);
@@ -456,6 +468,38 @@
 			}
 		}
 
+		function loadMySchedule(){
+			if (typeof schedule == 'undefined')
+			{
+				$('#list-schedule').empty();
+				return;
+			}
+			if (schedule['data'].length == 0)
+			{
+				$('#list-schedule').empty();
+				return;
+			}
+			var htmlString ='';
+			for (var i = 0; i < schedule['data'].length; i++)
+			{
+				
+			}
+		}
+
+		function sortMySchedule(){
+			schedule['data'].sort(function(a, b){
+				if (a.startTime > b.startTime)
+				{
+					return 1;		
+				}
+				if (a.startTime < b.startTime)
+				{
+					return -1;
+				}
+				return 0;
+			});
+		}
+
 		function loadAllFilms(){
 			var htmlString = '';
 			var tag;
@@ -492,8 +536,6 @@
 					schedules = xml;
 					localStorage['schedules'] = xml;
 					console.log('ajax success for schedules');
-					loadDates();
-					listFilms(localStorage['currentDateFilms']);
 				},
 				error: function(xhr){
 					console.log('ajax failed for schedules' + xhr.statusText);		
@@ -508,13 +550,21 @@
 				success: function(xml){
 					allFilms = xml;
 					console.log('ajax success for all films');
-					loadAllFilms();
 
 				},
 				error: function(xhr){
 					console.log('ajax failed for all films')
 				}
 			});
+		}
+
+		function cp_schedule(){
+			$.mobile.changePage('#schedule');		
+			$.mobile.showPageLoadingMsg();
+			setTimeout(function(){
+				$.mobile.hidePageLoadingMsg();},
+				3000
+			);
 		}
 
 
@@ -680,10 +730,12 @@
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>My Cinequest<br /> Schedule</h1>
+			<a class="ui-btn-right" data-icon="delete" data-iconpos="right">Delete</a>
 		</div>
 
 		<div data-role="content">
-			
+			<ul id="list-schedule" data-role="listview" data-inset="true">
+			</ul>
 		</div>
 		
 	</div>
