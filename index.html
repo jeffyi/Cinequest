@@ -9,7 +9,14 @@
 	<script src="http://code.jquery.com/mobile/1.3.0/jquery.mobile-1.3.0.min.js"></script>
 	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 	<style type="text/css">
-
+	forums > .ui-li-link-alt-left {
+		left: 0;
+		right: auto;
+	}
+	forums > .ul-li-has-alt-left {
+		padding-right: auto !important;
+		padding-left: 48px !important;
+	}
 	</style>
 	<script>
 		
@@ -18,9 +25,7 @@
 		var festival;			// the festival object
 		var schedules;			// the Cinequest XML schedules file
 		var schedule;			// the schedule object
-		var allFilms;			
-		var dvds;
-		var forums;
+		var allFilms;	
 		var filmsDates = {};	// to store lists of films by date 
 		var weekDay;
 		
@@ -30,10 +35,20 @@
 			weekDay = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 			getFestival();
 			getSchedules();
-			getAllFilms();
+			getAllFilms();			
 			getDVDs();
 			getForums();
 
+			$('#dvdDetail').on('pageinit',function(){			
+				if(localStorage['current_dvd_detail']!=null)
+					loadDVD(localStorage['current_dvd_detail']);
+			});
+			
+			$('#forumDetail').on('pageinit',function(){		
+				if(localStorage['current_forum_detail']!=null){
+					loadForum(localStorage['current_forum_detail']);
+					}
+			});
 
 			if (typeof localStorage['selectedTab'] != 'undefined')
 			{
@@ -82,6 +97,7 @@
 					$('#forums').show();
 					selectedTab = 2;
 					localStorage['selectedTab'] = selectedTab;
+					
 				}
 			});
 
@@ -531,7 +547,7 @@
 
 		}
 		
-		function loadDVDs(){	
+		function loadDVDs(dvds){	
 			var lastSort='0'
 			$(dvds).find('film').each(function(index){
 				var item = $('<li/>');
@@ -541,13 +557,9 @@
 				var sort = tag.attr('sort');
 				var title = tag.find('title').text();
 				link.html(title);
-				
+				link.attr('href','#dvdDetail');
 				(function(filmId){
 					link.click(function(){
-						window.location='#filmDetail';
-						$('#div-multipleFilmDetails').empty();
-						$('#top-filmDetail').empty();
-						$('#list-filmDetail').empty();
 						
 						getDVD(filmId);
 					});
@@ -600,11 +612,12 @@
 			var filmContentDiv = $('<div/>');
 			filmContentDiv.css('margin','0 1em 0 1em');
 			filmContentDiv.html(filmContent);
-			$('#top-filmDetail').append($('<h3/>').html(filmHeader));
-			$('#top-filmDetail').append(filmContentDiv);					
+			$('#content-dvdDetail').empty();
+			$('#content-dvdDetail').append($('<h3/>').html(filmHeader));
+			$('#content-dvdDetail').append(filmContentDiv);					
 		}
 		
-		function loadForums(){	
+		function loadForums(forums){	
 			var lastDate= new Date();
 			$(forums).find('schedule').each(function(index){
 				var item = $('<li/>');
@@ -628,19 +641,17 @@
 				var venue =  $('<span/>').html('Venue: '+tag.attr('venue'));
 				venue.css('margin','0 0 0 2em');
 				var lowerDiv = $('<div/>');
+				
 				lowerDiv.append(startTimeSpan);
 				lowerDiv.append(endTimeSpan);
 				lowerDiv.append(venue);
 				link.append(title);
 				link.append($('<small/>').html(lowerDiv));	
+				link.attr('href','#forumDetail');
 				(function(programId){
 					link.click(function(){
-						window.location='#filmDetail';
-						$('#div-multipleFilmDetails').empty();
-						$('#top-filmDetail').empty();
-						$('#list-filmDetail').empty();
-						
-						getForum(programId);
+						localStorage['current_forum_detail']=''+programId;
+						loadForum(programId);
 					});
 				})(id);
 						
@@ -652,23 +663,39 @@
 						$('#list-forums').append(divider);	
 						lastDate = s;
 					}
-				item.html(link);
+				item.append(link);
+				var cbutton = $('<a data-rel="popup" data-position-to="window" data-transition="pop">Save to Schedule</a>');
+				cbutton.mousedown(function(){
+					console.log(cbutton.attr('data-theme'));
+					if(cbutton.attr('data-theme')=='a')
+						cbutton.buttonMarkup({theme:'b'}).button();
+					else
+						cbutton.buttonMarkup({theme:'a'}).button();
+					$('#list-forums').listview('refresh');	
+				});
+				item.append(cbutton);
 				$('#list-forums').append(item);				
 			});
 			if ($('#list-forums').hasClass('ui-listview'))
 				$('#list-forums').listview('refresh');		
-			else
-				$('#list-forums').trigger('create');	
+			else{
+				$('#list-forums').trigger('create');
+				console.log('create list froum');
+				}
 		}
 		
-		function loadForum(forum){		
+		function loadForum(forumId){	
+			if(festival==null)
+				festival=localStorage['festival'];
+			var forum = $(festival).find('program_item[id='+forumId+']');
+			$('#content-forumDetail').empty();
 			var dvdHandle = $(forum);
 			var title = $('<p/>').html($('<h3/>').html(dvdHandle.find('title').text()));	
 			title.css('text-align','center');
 			var description = $('<div/>').html($('<small/>').html(dvdHandle.find('description').text()));	
 			description.css('margin','0 1em 0 1em');
-			$('#top-filmDetail').append(title);
-			$('#top-filmDetail').append(description);	
+			$('#content-forumDetail').append(title);
+			$('#content-forumDetail').append(description);	
 		}
 		
 		function getSchedules(){
@@ -706,10 +733,10 @@
 				type: "GET",
 				url: proxy + "type=dvds",
 				success: function(xml){
-					dvds = xml;
+					var dvds = xml;
 					localStorage['dvds'] = xml;
 					console.log('ajax success for dvds');
-					loadDVDs();
+					loadDVDs(dvds);
 				},
 				error: function(xhr){
 					console.log('ajax failed for schedules' + xhr.statusText);		
@@ -724,6 +751,7 @@
 				success: function(xml){
 					var dvd = xml;
 					localStorage['dvd'+dvdId] = xml;
+					localStorage['current_dvd_detail']=xml;
 					console.log('ajax success for dvds');
 					loadDVD(dvd);
 				},
@@ -733,32 +761,16 @@
 			});
 		}
 		
-		function getForums(d){
+		function getForums(){
 			$.ajax({
 				type: "GET",
 				url: proxy + "type=xml&name=events",
 				success: function(xml){
 					var event = xml;
-					forums = $(event).find('forums');
+					var forums = $(event).find('forums');
 					localStorage['forums'] = xml;
 					console.log('ajax success for forums');
-					loadForums();
-				},
-				error: function(xhr){
-					console.log('ajax failed for schedules' + xhr.statusText);		
-				}
-			});
-		}
-		
-		function getForum(id){
-			$.ajax({
-				type: "GET",
-				url: proxy + "type=program_item&id="+id,
-				success: function(xml){
-					var forum = xml;
-					localStorage['forum'+id] = xml;
-					console.log('ajax success for forums');
-					loadForum(forum);
+					loadForums(forums);
 				},
 				error: function(xhr){
 					console.log('ajax failed for schedules' + xhr.statusText);		
@@ -847,7 +859,7 @@
 		<!-- Forums page -->
 			<div id="forums" style="display:none">
 				<br />
-				<ul id="list-forums" data-role="listview" data-inset="true" data-filter="true" data-filter-placeholder="Filter forums...">
+				<ul id="list-forums" data-role="listview" data-inset="true" data-filter="true" data-split-theme="a" data-split-icon="check" data-filter-placeholder="Filter forums...">
 					
 				</ul>
 			</div>
@@ -859,7 +871,7 @@
 	</div>
 
 <!-- DVDs page -->
-	<div data-role="page" id="dvds" data-title="Cinequest - DVDs" data-theme="a" data-content-theme="a">
+	<div data-role="page" id="dvds" data-title="Cinequest - DVDs" data-add-back-btn="true" data-theme="a" data-content-theme="a">
 
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>Cinequest</h1>
@@ -880,9 +892,23 @@
 		</div>
 
 	</div>
+	
+<!-- DVD Detail page -->
+	<div data-role="page" id="dvdDetail" data-title="Cinequest - Film Detail" data-add-back-btn="true" data-theme="a" data-content-theme="a">
+		
+		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
+			<h1>Cinequest</h1>
+			<a href="#schedule" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
+		</div>
+
+		<div id="content-dvdDetail" data-role="content" style="padding: 0px 0px">
+
+		</div>
+
+	</div>
 
 <!-- FilmsDates page -->
-	<div data-role="page" id="filmsDates" data-add-back-btn="true"data-theme="a" data-content-theme="a">
+	<div data-role="page" id="filmsDates" data-add-back-btn="true" data-theme="a" data-content-theme="a">
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>Cinequest</h1>
@@ -922,6 +948,20 @@
 
 	</div>
 
+<!-- Forum Detail page -->
+	<div data-role="page" id="forumDetail" data-title="Cinequest - Event Detail" data-add-back-btn="true" data-theme="a" data-content-theme="a">
+		
+		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
+			<h1>Cinequest</h1>
+			<a href="#schedule" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
+		</div>
+
+		<div id="content-forumDetail" data-role="content" style="padding: 0px 0px">
+
+		</div>
+
+	</div>
+	
 <!-- AllFilms page -->
 	<div data-role="page" id="allFilms" data-title="Cinequest - Films" data-add-back-btn="true" data-theme="a" data-content-theme="a">
 
