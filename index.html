@@ -636,7 +636,10 @@
 				title.css('text-overflow','ellipsis');
 				title.css('overflow','hidden');
 				var startTime = tag.attr('start_time');
-				var s = new Date(startTime);
+				var fullDateArray = startTime.split(' ');
+				var dateArray = fullDateArray[0].split('-');
+				var timeArray = fullDateArray[1].split(':');
+				var s = new Date(dateArray[0],dateArray[1],dateArray[2],timeArray[0],timeArray[1],timeArray[2],0);
 				var ampm = '';
 				if(s.getHours()>=12)
 					ampm='PM';
@@ -644,7 +647,10 @@
 				    ampm='AM';
 				var startTimeSpan = $('<span/>').html('Time: '+s.getHours()%12+':'+('0'+s.getMinutes()).slice(-2)+ampm);
 				var endTime =  tag.attr('end_time');
-				var e = new Date(endTime);
+				var fullDateArraye = endTime.split(' ');
+				var dateArraye = fullDateArraye[0].split('-');
+				var timeArraye = fullDateArraye[1].split(':');
+				var e = new Date(dateArraye[0],dateArraye[1],dateArraye[2],timeArraye[0],timeArraye[1],timeArraye[2],0);
 				var endTimeSpan = $('<span/>').html(' - '+e.getHours()%12+':'+('0'+e.getMinutes()).slice(-2)+ampm);
 				var venue =  $('<span/>').html('Venue: '+tag.attr('venue'));
 				venue.css('margin','0 0 0 2em');
