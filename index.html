@@ -34,6 +34,8 @@
 		var allFilms;	
 		var filmsDates = {};	// to store lists of films by date 
 		var weekDay;
+		var festival_films;
+		var festival_programItems;
 		
 		$(function(){
 
@@ -150,6 +152,8 @@
 				},
 				success: function(xml){
 					festival = xml;
+					festival_films = $($(festival).find('films'));
+					festival_programItems = $($(festival).find('program_items'));
 					localStorage['festival'] = festival;
 					console.log('ajax success for festival');
 					loadDates();
@@ -288,7 +292,7 @@
 			var tag;
 			var films = [];
 			var filmIndex;
-			$(festival).find('program_item').each(function(){
+			festival_programItems.find('program_item').each(function(){
 				if ($(this).attr('id') == pid)
 				{
 					tag = $(this);
@@ -346,8 +350,7 @@
 				$('#div-multipleFilmDetails input').checkboxradio('refresh');		
 			}
 
-			$(festival).find('films').each(function(){
-				$(this).find('film').each(function(){
+				festival_films.find('film').each(function(){
 					tag = $(this);
 					if (tag.attr('id') == filmId)
 					{
@@ -412,7 +415,6 @@
 						return false;
 					}
 				});
-			});
 		}
 
 		function updateScheduleFilms(id, pid, type, title, startTime, endTime, venue){
