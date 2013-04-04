@@ -152,8 +152,8 @@
 				},
 				success: function(xml){
 					festival = xml;
-					festival_films = $($(festival).find('films'));
-					festival_programItems = $($(festival).find('program_items'));
+					festival_films = $(festival).find('films').find('film');
+					festival_programItems = $(festival).find('program_items').find('program_item');
 					localStorage['festival'] = festival;
 					console.log('ajax success for festival');
 					loadDates();
@@ -184,7 +184,7 @@
 			var htmlString = '';
 			var tag;
 			var nextDate;
-			$(schedules).find('schedule').each(function(){
+			schedules.each(function(){
 				tag = $(this);
 				nextDate = tag.attr('start_time').split(' ')[0];
 				if (nextDate !== currentDate)
@@ -292,7 +292,7 @@
 			var tag;
 			var films = [];
 			var filmIndex;
-			festival_programItems.find('program_item').each(function(){
+			festival_programItems.each(function(){
 				if ($(this).attr('id') == pid)
 				{
 					tag = $(this);
@@ -350,7 +350,7 @@
 				$('#div-multipleFilmDetails input').checkboxradio('refresh');		
 			}
 
-				festival_films.find('film').each(function(){
+				festival_films.each(function(){
 					tag = $(this);
 					if (tag.attr('id') == filmId)
 					{
@@ -369,7 +369,7 @@
 						var endTime;
 						var dateParts;
 						var dateDisplay;
-						$(schedules).find('schedule').each(function(){
+						schedules.each(function(){
 							var tag = $(this);
 							if (tag.attr('program_item_id') == pid)
 							{
@@ -531,7 +531,7 @@
 			var htmlString = '';
 			var tag;
 			var currentSort = null;
-			$(allFilms).find('film').each(function(){
+			allFilms.each(function(){
 				tag = $(this);
 				if (currentSort == null){
 					currentSort = tag.attr('sort');		
@@ -711,8 +711,7 @@
 				type: "GET",
 				url: proxy + "type=schedules",
 				success: function(xml){
-					schedules = xml;
-					localStorage['schedules'] = xml;
+					schedules = $(xml).find('schedule');
 					console.log('ajax success for schedules');
 				},
 				error: function(xhr){
@@ -726,7 +725,7 @@
 				type: "GET",
 				url: proxy + "type=films",
 				success: function(xml){
-					allFilms = xml;
+					allFilms = $(xml).find('film');
 					console.log('ajax success for all films');
 
 				},
