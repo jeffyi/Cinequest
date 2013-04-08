@@ -38,7 +38,6 @@
 		var festival_programItems;
 		var events;
 		var special_events;
-		var events_schedules;
 		
 		$(function(){
 
@@ -867,13 +866,11 @@
 				lowerDiv.append(venue);
 				link.append(title);
 				link.append($('<small/>').html(lowerDiv));	
-				link.attr('href','#eventDetail');
-				(function(programId){
-					link.click(function(){
-						localStorage['current_event_detail']=''+programId;
-						loadEvent(programId);
+				link.click(function(){
+						localStorage['current_event_detail']=''+id;
+						getEvent(id);
+						$.mobile.changePage('#eventDetail')  
 					});
-				})(id);
 						
 				var sdate = s.toString().split(' ');
 				if((lastDate.getYear()!=s.getYear())||(lastDate.getMonth() != s.getMonth())||(lastDate.getDate() != s.getDate())){
@@ -904,18 +901,36 @@
 				}
 		}
 
-		function loadEvent(eventId){	
-			if(festival==null)
-				festival=localStorage['festival'];
-			var event = $(festival).find('program_item[id='+forumId+']');
-			$('#content-eventDetail').empty();
+		function getEvent(eventId){
+			$.ajax({
+				type: "GET",
+				url: proxy + "type=xml&name=items&id=" + eventId,
+				beforeSend: function(xhr){
+					$('body').addClass('ui-loading');		
+				},
+				success: function(xml){
+					var event= xml;
+					console.log('ajax success for event');
+					loadEvent(event);
+				},
+				error: function(xhr){
+					console.log('ajax failed for events:' + xhr.statusText);
+				},
+				complete: function(xhr){
+					$('body').removeClass('ui-loading');
+				}
+			});
+		}
+
+		function loadEvent(event){	
+			$('#top-eventDetail').empty();
 			var eventHandle = $(event);
-			var title = $('<p/>').html($('<h3/>').html(dvdHandle.find('title').text()));	
+			var title = $('<p/>').html($('<h3/>').html(eventHandle.find('title').text()));	
 			title.css('text-align','center');
-			var description = $('<div/>').html($('<small/>').html(dvdHandle.find('description').text()));	
+			var description = $('<div/>').html($('<small/>').html(eventHandle.find('description').text()));	
 			description.css('margin','0 1em 0 1em');
-			$('#content-eventDetail').append(title);
-			$('#content-eventDetail').append(description);	
+			$('#top-eventDetail').append(title);
+			$('#top-eventDetail').append(description);	
 		}
 
 
@@ -1104,6 +1119,8 @@
 		</div>
 
 		<div id="content-eventDetail" data-role="content" style="padding: 0px 0px">
+			<div id="top-eventDetail">
+			</div>
 
 		</div>
 
