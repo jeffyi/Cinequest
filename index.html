@@ -28,6 +28,7 @@
 		
 		var proxy;
 		var selectedTab;
+		var homeData;
 		var festival;			// the festival object
 		var schedules;			// the Cinequest XML schedules file
 		var schedule;			// the schedule object
@@ -44,6 +45,7 @@
 			proxy = "cinequestProxy.php?";
 			weekDay = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 			getFestival();
+			getHomeData();
 			getSchedules();
 			getAllFilms();			
 			getDVDs();
@@ -150,6 +152,69 @@
 			});
 		});
 
+		function getHomeData(){
+			$.ajax({
+				type: "GET",
+				url: proxy + "type=xml&name=ihome",
+				success: function(xml){
+					homeData = $(xml).find('section');
+					console.log('ajax success for homeData');
+					loadHomeData();
+				},
+				error: function(xhr){
+					console.log('ajax failed for homeData');
+				}
+			});
+		}
+
+		function loadHomeData(){
+				$('#img-index').html('<img src="' + $(homeData[0]).find('imageURL').text() + '" style="max-width: 100%" />');
+				var htmlString = '';
+				var section;
+				var item;
+				var link;
+				for (var i = 1; i < homeData.length; i++)
+				{
+					section = $(homeData[i]);
+					htmlString += '<li data-role="list-divider">' + section.attr('name') + '</li>';	
+					section.find('item').each(function(){
+						item = $(this);
+						link = $(item.find('link'));
+						htmlString += '<li><a href="#homeDetail" onclick="getHomeDetail(\'' + link.attr('id') + '\')">' + item.find('title').text() + '</a></li>';
+					});
+				}
+				$('#list-index').html(htmlString);
+				if ($('#list-index').hasClass('ui-listview')){
+					$('#list-index').listview('refresh');
+				}
+				else
+				{
+					$('#list-index').trigger('create');
+				}
+		}
+
+		function getHomeDetail(pid){
+			localStorage['currentHomeDetail'] = pid;
+			$('#content-homeDetail').empty();
+			$('#homeDetail').addClass('ui-loading');
+			$.ajax({
+				type: "GET",
+				url: proxy + 'type=xml&name=items&id=' + pid,
+				success: function(xml){
+					var detail = $(xml);
+					$('#content-homeDetail').html('<div align="center"><h3>' + detail.find('title').text() + '</h3></div><p><small>' + detail.find('description').text().replace('&quot;', '').replace(/&quot;/g, ' target="_blank"') + '</small></p>');	
+					console.log($('#content-homeDetail').html());
+				},
+				error: function(xhr){
+					console.log('ajax failed for getHomeDetail');
+				},
+				complete: function (xhr){
+					$('#homeDetail').removeClass('ui-loading');		
+				}
+
+			});
+		}
+
 		function getFestival(){
 			$.ajax({
 				type: "GET",
@@ -173,6 +238,10 @@
 					{
 						showFilmDetail(localStorage['currentFilmDetail'], localStorage['currentFilmId']);		
 					}
+					if (typeof localStorage['currentHomeDetail'] != 'undefined')
+					{
+						getHomeDetail(localStorage['currentHomeDetail']);		
+					}
 				},
 				error: function(xhr){
 					console.log('ajax failed for festival:' + xhr.statusText);
@@ -191,6 +260,9 @@
 			var htmlString = '';
 			var tag;
 			var nextDate;
+			if (typeof schedules == 'undefined'){
+				schedules = $(localStorage['schedules']).find('schedule');
+			}
 			schedules.each(function(){
 				tag = $(this);
 				nextDate = tag.attr('start_time').split(' ')[0];
@@ -538,6 +610,9 @@
 			var htmlString = '';
 			var tag;
 			var currentSort = null;
+			if (typeof allFilms == 'undefined'){
+				allFilms = $(localStorage['allFilms']).find('film');
+			}
 			allFilms.each(function(){
 				tag = $(this);
 				if (currentSort == null){
@@ -652,7 +727,7 @@
 					ampm='PM';
 				else
 				    ampm='AM';
-				var startTimeSpan = $('<span/>').html('Time: '+s.getHours()%12+':'+('0'+s.getMinutes()).slice(-2)+ampm);
+				var startTimeSpan = $('<span/>').html(''+s.getHours()%12+':'+('0'+s.getMinutes()).slice(-2)+ampm);
 				var endTime =  tag.attr('end_time');
 				var fullDateArraye = endTime.split(' ');
 				var dateArraye = fullDateArraye[0].split('-');
@@ -725,6 +800,7 @@
 				url: proxy + "type=schedules",
 				success: function(xml){
 					schedules = $(xml).find('schedule');
+					localStorage['schedules'] = xml;
 					console.log('ajax success for schedules');
 				},
 				error: function(xhr){
@@ -738,6 +814,7 @@
 				type: "GET",
 				url: proxy + "type=films",
 				success: function(xml){
+					localStorage['allFilms'] = xml;
 					allFilms = $(xml).find('film');
 					console.log('ajax success for all films');
 
@@ -759,7 +836,7 @@
 					loadDVDs(dvds);
 				},
 				error: function(xhr){
-					console.log('ajax failed for schedules' + xhr.statusText);		
+					console.log('ajax failed for DVDs' + xhr.statusText);		
 				}
 			});
 		}
@@ -776,7 +853,7 @@
 					loadDVD(dvd);
 				},
 				error: function(xhr){
-					console.log('ajax failed for schedules' + xhr.statusText);		
+					console.log('ajax failed for DVD' + xhr.statusText);		
 				}
 			});
 		}
@@ -812,7 +889,6 @@
 				type: "GET",
 				url: proxy + "type=xml&name=events",
 				beforeSend: function(xhr){
-					$('body').addClass('ui-loading');		
 				},
 				success: function(xml){
 					events= xml;
@@ -825,7 +901,6 @@
 					console.log('ajax failed for events:' + xhr.statusText);
 				},
 				complete: function(xhr){
-					$('body').removeClass('ui-loading');
 				}
 			});
 		}
@@ -850,7 +925,7 @@
 					ampm='PM';
 				else
 				    ampm='AM';
-				var startTimeSpan = $('<span/>').html('Time: '+s.getHours()%12+':'+('0'+s.getMinutes()).slice(-2)+ampm);
+				var startTimeSpan = $('<span/>').html(''+s.getHours()%12+':'+('0'+s.getMinutes()).slice(-2)+ampm);
 				var endTime =  tag.attr('end_time');
 				var fullDateArraye = endTime.split(' ');
 				var dateArraye = fullDateArraye[0].split('-');
@@ -906,7 +981,6 @@
 				type: "GET",
 				url: proxy + "type=xml&name=items&id=" + eventId,
 				beforeSend: function(xhr){
-					$('body').addClass('ui-loading');		
 				},
 				success: function(xml){
 					var event= xml;
@@ -917,7 +991,6 @@
 					console.log('ajax failed for events:' + xhr.statusText);
 				},
 				complete: function(xhr){
-					$('body').removeClass('ui-loading');
 				}
 			});
 		}
@@ -953,10 +1026,26 @@
 			</div>
 		</div>
 
-		<div data-role="content">
-			<div align="center">
-				<img id="img-cinequest" src="img/creative.gif" style="max-width: 100%" />
+		<div data-role="content" style="padding-top: 0px; padding-left: 0px; padding-right: 0px;">
+			<div align="center" id="img-index">
 			</div>
+			
+			<ul id="list-index" data-role="listview" style="padding-left: 10px; padding-right: 10px">
+			</ul>
+		</div>
+
+	</div>
+
+<!-- Home Detail page-->
+	<div data-role="page" id="homeDetail" data-title="Cinequest - News" data-theme="a" data-content-theme="a" data-add-back-btn="true">
+		
+		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
+			<h1>Cinequest</h1>
+			<a href="#schedule" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
+		</div>
+
+		<div data-role="content" id="content-homeDetail">
+			
 		</div>
 
 	</div>
