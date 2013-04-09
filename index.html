@@ -203,7 +203,6 @@
 				success: function(xml){
 					var detail = $(xml);
 					$('#content-homeDetail').html('<div align="center"><h3>' + detail.find('title').text() + '</h3></div><p><small>' + detail.find('description').text().replace('&quot;', '').replace(/&quot;/g, ' target="_blank"') + '</small></p>');	
-					console.log($('#content-homeDetail').html());
 				},
 				error: function(xhr){
 					console.log('ajax failed for getHomeDetail');
@@ -1123,7 +1122,7 @@
 		</div>
 
 		<div data-role="content">
-			<ul id="list-dvds" data-role="listview" data-inset="true" data-filter="true" data-filter-placeholder="Filter dvds...">
+			<ul id="list-dvds" data-role="listview" data-filter="true" data-filter-placeholder="Filter dvds...">
 					
 			</ul>
 		</div>
