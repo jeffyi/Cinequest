@@ -39,10 +39,12 @@
 		var festival_programItems;
 		var events;
 		var special_events;
+		var themeB;
 		
 		$(function(){
 
 			proxy = "cinequestProxy.php?";
+			themeB = [];
 			weekDay = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 			getFestival();
 			getHomeData();
@@ -333,17 +335,12 @@
 						}
 					}
 				}
-				htmlString += '<li><a id="' + films[i]['id'] + '"';
 				if (scheduled)
 				{
-					htmlString += ' style="background-color: #387bbe" ';		
+					themeB.push('#' + films[i]['id']);
 				}
-				htmlString += ' onclick="updateScheduleFilms(\'' + films[i]['id']  + '\', \'' + films[i]['pid'] + '\', \'film\',  \'' + films[i]['title'].replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + films[i]['startTime'] + '\', \'' + films[i]['endTime'] + '\', \'' + films[i]['venue'] + '\')">' + '<h1>' + films[i]['title']  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + films[i]['venue']  + '</small>';
-				if (scheduled)
-				{
-					htmlString += '<span class="schedule"><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Scheduled)</small></span>';		
-				}
-				htmlString += '</p></a><a href="#filmDetail" id="s' + films[i]['id']  + '" onclick="showFilmDetail(\'' + films[i]['pid']  + '\', \'null\')"></a></li>';
+				htmlString += '<li><a href="#filmDetail" id="s' + films[i]['id'] + '" onclick="showFilmDetail(\'' + films[i]['pid']  + '\', \'null\')">' + '<h1>' + films[i]['title']  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + films[i]['venue']  + '</small>';
+				htmlString += '</p></a><a href="" id="' + films[i]['id']  + '" onclick="updateScheduleFilms(\'' + films[i]['id']  + '\', \'' + films[i]['pid'] + '\', \'film\',  \'' + films[i]['title'].replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + films[i]['startTime'] + '\', \'' + films[i]['endTime'] + '\', \'' + films[i]['venue'] + '\')"></a></li>';
 			}
 			$('#name-filmsDates').html('<h2>Films on ' + dateString  + '</h2>');
 			$('#list-filmsDates').html(htmlString);
@@ -354,6 +351,10 @@
 			else
 			{
 				$('#list-filmsDates').trigger('create');
+			}
+			for (var i = 0; i < themeB.length; i++)
+			{
+				$(themeB[i]).addClass('ui-btn-active');		
 			}
 		}
 
@@ -502,30 +503,26 @@
 					updateSchedule(id.replace('fd', ''), pid, 'film', title, startTime, endTime, venue, true);
 					$('#' + id + ' > p').append('<span class="schedule"><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Scheduled)</small></span>');
 					$('#' + id).css({'background-color': '#387bbe'});
-					$('#' + id.replace('fd', '') + ' > p').append('<span class="schedule"><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Scheduled)</small></span>');
-					$('#' + id.replace('fd', '')).css({'background-color': '#387bbe'});
+					$('#' + id.replace('fd', '')).addClass('ui-btn-active');
 				}
 				else
 				{
 					updateSchedule(id.replace('fd', ''), pid, 'film', title, startTime, endTime, venue, false);
 					$('#' + id + ' span.schedule').remove();
 					$('#' + id).css({'background-color': 'rgba(0, 0, 0, 0)'});
-					$('#' + id.replace('fd', '') + ' span.schedule').remove();
-					$('#' + id.replace('fd', '')).css({'background-color': 'rgba(0, 0, 0, 0)'});
+					$('#' + id.replace('fd', '')).removeClass('ui-btn-active');
 				}
 				return;
 			}
-			if ($('#' + id + ' span.schedule').length == 0)
+			if ($('#' + id).hasClass('ui-btn-active'))
 			{
-				updateSchedule(id.replace('fd', ''), pid, 'film', title, startTime, endTime, venue, true);
-				$('#' + id + ' > p').append('<span class="schedule"><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Scheduled)</small></span>');
-				$('#' + id).css({'background-color': '#387bbe'});
+				updateSchedule(id.replace('fd', ''), pid, 'film', title, startTime, endTime, venue, false);
+				$('#' + id).removeClass('ui-btn-active');
 			}
 			else
 			{
-				updateSchedule(id.replace('fd', ''), pid, 'film', title, startTime, endTime, venue, false);
-				$('#' + id + ' span.schedule').remove();
-				$('#' + id).css({'background-color': 'rgba(0, 0, 0, 0)'});
+				updateSchedule(id.replace('fd', ''), pid, 'film', title, startTime, endTime, venue, true);
+				$('#' + id).addClass('ui-btn-active');
 			}
 		}
 
@@ -1155,7 +1152,7 @@
 
 			</div>
 
-			<ul id="list-filmsDates" data-role="listview" data-filter="true" data-filter-placeholder="Filter films..." data-inset="true" data-split-theme="a">
+			<ul id="list-filmsDates" data-role="listview" data-filter="true" data-filter-placeholder="Filter films..." data-inset="true" data-split-theme="a" data-split-icon="check">
 
 			</ul>
 		</div>
