@@ -52,23 +52,6 @@
 			getForums();
 			getEvents();
 
-			$('#dvdDetail').on('pageinit',function(){			
-				if(localStorage['current_dvd_detail']!=null)
-					loadDVD(localStorage['current_dvd_detail']);
-			});
-			
-			$('#forumDetail').on('pageinit',function(){		
-				if(localStorage['current_forum_detail']!=null){
-					loadForum(localStorage['current_forum_detail']);
-					}
-			});
-
-			$('#eventDetail').on('pageinit',function(){		
-				if(localStorage['current_event_detail']!=null){
-					loadEvent(localStorage['current_event_detail']);
-					}
-			});
-
 			if (typeof localStorage['selectedTab'] != 'undefined')
 			{
 				selectedTab = localStorage['selectedTab'];
@@ -180,7 +163,7 @@
 					section.find('item').each(function(){
 						item = $(this);
 						link = $(item.find('link'));
-						htmlString += '<li><a href="#homeDetail" onclick="getHomeDetail(\'' + link.attr('id') + '\')">' + item.find('title').text() + '</a></li>';
+						htmlString += '<li><a href="#homeDetail" onclick="getHomeDetail(\'' + link.attr('id') + '\', ' + true + ')">' + item.find('title').text() + '</a></li>';
 					});
 				}
 				$('#list-index').html(htmlString);
@@ -193,10 +176,12 @@
 				}
 		}
 
-		function getHomeDetail(pid){
+		function getHomeDetail(pid, isLoading){
 			localStorage['currentHomeDetail'] = pid;
 			$('#content-homeDetail').empty();
-			$('#homeDetail').addClass('ui-loading');
+			if (isLoading){
+				$('body').addClass('ui-loading');
+			}
 			$.ajax({
 				type: "GET",
 				url: proxy + 'type=xml&name=items&id=' + pid,
@@ -208,7 +193,9 @@
 					console.log('ajax failed for getHomeDetail');
 				},
 				complete: function (xhr){
-					$('#homeDetail').removeClass('ui-loading');		
+					if (isLoading){
+						$('body').removeClass('ui-loading');
+					}
 				}
 
 			});
@@ -239,7 +226,19 @@
 					}
 					if (typeof localStorage['currentHomeDetail'] != 'undefined')
 					{
-						getHomeDetail(localStorage['currentHomeDetail']);		
+						getHomeDetail(localStorage['currentHomeDetail'], false);		
+					}
+					if(localStorage['current_dvd_detail']!=null)
+					{
+						loadDVD(localStorage['current_dvd_detail']);
+					}
+					if(localStorage['current_forum_detail']!=null)
+					{
+						loadForum(localStorage['current_forum_detail']);
+					}
+					if(localStorage['current_event_detail']!=null)
+					{
+						loadEvent(localStorage['current_event_detail']);
 					}
 				},
 				error: function(xhr){
