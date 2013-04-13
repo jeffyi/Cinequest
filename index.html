@@ -47,7 +47,8 @@
 
 			proxy = "cinequestProxy.php?";
 			scheduledFilms = [];
-			scheduledOthers= [];
+			scheduledForums= [];
+			scheduledEvents= [];
 			weekDay = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 			getFestival();
 			getHomeData();
@@ -191,7 +192,7 @@
 				url: proxy + 'type=xml&name=items&id=' + pid,
 				success: function(xml){
 					var detail = $(xml);
-					$('#content-homeDetail').html('<div align="center"><h3>' + detail.find('title').text() + '</h3></div><p><small>' + detail.find('description').text().replace('&quot;', '').replace(/&quot;/g, ' target="_blank"') + '</small></p>');	
+					$('#content-homeDetail').html('<div align="center"><h3>' + detail.find('title').text() + '</h3></div><p><small>' + detail.find('description').text().replace(/&quot;>/g, ' target="_blank">').replace(/&quot;/g, '') + '</small></p>');	
 				},
 				error: function(xhr){
 					console.log('ajax failed for getHomeDetail');
@@ -530,12 +531,12 @@
 			}
 			if ($('#' + id).hasClass('ui-btn-active'))
 			{
-				updateSchedule(id.replace('fd', ''), pid, 'film', title, startTime, endTime, venue, false);
+				updateSchedule(id, pid, 'film', title, startTime, endTime, venue, false);
 				$('#' + id).removeClass('ui-btn-active');
 			}
 			else
 			{
-				updateSchedule(id.replace('fd', ''), pid, 'film', title, startTime, endTime, venue, true);
+				updateSchedule(id, pid, 'film', title, startTime, endTime, venue, true);
 				$('#' + id).addClass('ui-btn-active');
 			}
 		}
@@ -729,7 +730,7 @@
 				{
 					scheduledForums.push('#' + forum.attr('id'));
 				}
-				htmlString += '<li><a href="#forumDetail" onclick="loadForum(' + forum.attr('mobile_item_id') + ', true)">' + '<h1>' + forum.attr('title')  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + forum.attr('venue')  + '</small></p></a><a href="" id="' + forum.attr('id')  + '" onclick="updateScheduleForums(\'' + forum.attr('id')  + '\', \'' + forum.attr('mobile_item_id') + '\', \'forum\',  \'' + forum.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + forum.attr('start_time') + '\', \'' + forum.attr('end_time') + '\', \'' + forum.attr('venue') + '\')"></a></li>';
+				htmlString += '<li><a href="#forumDetail" onclick="loadForum(' + forum.attr('mobile_item_id') + ', true)">' + '<h1>' + forum.attr('title')  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + forum.attr('venue')  + '</small></p></a><a href="" id="fr' + forum.attr('id')  + '" onclick="updateScheduleForums(\'' + forum.attr('id')  + '\', \'' + forum.attr('mobile_item_id') + '\', \'forum\',  \'' + forum.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + forum.attr('start_time') + '\', \'' + forum.attr('end_time') + '\', \'' + forum.attr('venue') + '\')"></a></li>';
 			}
 			$('#list-forums').html(htmlString);				
 			if ($('#list-forums').hasClass('ui-listview'))
@@ -903,7 +904,7 @@
 				{
 					scheduledForums.push('#' + special_event.attr('id'));
 				}
-				htmlString += '<li><a href="#eventDetail" onclick="getEvent(' + special_event.attr('mobile_item_id') + ', true)">' + '<h1>' + special_event.attr('title')  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + special_event.attr('venue')  + '</small></p></a><a href="" id="' + special_event.attr('id')  + '" onclick="updateScheduleSpecialEvents(\'' + special_event.attr('id')  + '\', \'' + special_event.attr('mobile_item_id') + '\', \'special_event\',  \'' + special_event.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + special_event.attr('start_time') + '\', \'' + special_event.attr('end_time') + '\', \'' + special_event.attr('venue') + '\')"></a></li>';
+				htmlString += '<li><a href="#eventDetail" onclick="getEvent(' + special_event.attr('mobile_item_id') + ', true)">' + '<h1>' + special_event.attr('title')  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + special_event.attr('venue')  + '</small></p></a><a href="" id="se' + special_event.attr('id')  + '" onclick="updateScheduleSpecialEvents(\'' + special_event.attr('id')  + '\', \'' + special_event.attr('mobile_item_id') + '\', \'special_event\',  \'' + special_event.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + special_event.attr('start_time') + '\', \'' + special_event.attr('end_time') + '\', \'' + special_event.attr('venue') + '\')"></a></li>';
 			}
 			$('#list-events').html(htmlString);				
 			if ($('#list-events').hasClass('ui-listview'))
