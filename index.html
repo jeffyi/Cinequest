@@ -33,25 +33,27 @@
 		var schedules;			// the Cinequest XML schedules file
 		var schedule;			// the schedule object
 		var allFilms;	
+		var forums;
+		var special_events;
 		var filmsDates = {};	// to store lists of films by date 
 		var weekDay;
 		var festival_films;
 		var festival_programItems;
-		var events;
-		var special_events;
-		var themeB;
+		var scheduledFilms;
+		var scheduledForums;
+		var scheduledEvents;
 		
 		$(function(){
 
 			proxy = "cinequestProxy.php?";
-			themeB = [];
+			scheduledFilms = [];
+			scheduledOthers= [];
 			weekDay = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 			getFestival();
 			getHomeData();
 			getSchedules();
 			getAllFilms();			
 			getDVDs();
-			getForums();
 			getEvents();
 
 			if (typeof localStorage['selectedTab'] != 'undefined')
@@ -224,7 +226,7 @@
 					}
 					if (typeof localStorage['currentFilmDetail'] != 'undefined')
 					{
-						showFilmDetail(localStorage['currentFilmDetail'], localStorage['currentFilmId']);		
+						showFilmDetail(localStorage['currentFilmDetail'], localStorage['currentFilmId'], false);		
 					}
 					if (typeof localStorage['currentHomeDetail'] != 'undefined')
 					{
@@ -236,11 +238,11 @@
 					}
 					if(localStorage['current_forum_detail']!=null)
 					{
-						loadForum(localStorage['current_forum_detail']);
+						loadForum(localStorage['current_forum_detail'], false);
 					}
 					if(localStorage['current_event_detail']!=null)
 					{
-						loadEvent(localStorage['current_event_detail']);
+						getEvent(localStorage['current_event_detail'], false);
 					}
 					// loadMySchedule();
 				},
@@ -338,9 +340,9 @@
 				}
 				if (scheduled)
 				{
-					themeB.push('#' + films[i]['id']);
+					scheduledFilms.push('#' + films[i]['id']);
 				}
-				htmlString += '<li><a href="#filmDetail" id="s' + films[i]['id'] + '" onclick="showFilmDetail(\'' + films[i]['pid']  + '\', \'null\')">' + '<h1>' + films[i]['title']  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + films[i]['venue']  + '</small></p></a><a href="" id="' + films[i]['id']  + '" onclick="updateScheduleFilms(\'' + films[i]['id']  + '\', \'' + films[i]['pid'] + '\', \'film\',  \'' + films[i]['title'].replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + films[i]['startTime'] + '\', \'' + films[i]['endTime'] + '\', \'' + films[i]['venue'] + '\')"></a></li>';
+				htmlString += '<li><a href="#filmDetail" id="s' + films[i]['id'] + '" onclick="showFilmDetail(\'' + films[i]['pid']  + '\', \'null\', true)">' + '<h1>' + films[i]['title']  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + films[i]['venue']  + '</small></p></a><a href="" id="' + films[i]['id']  + '" onclick="updateScheduleFilms(\'' + films[i]['id']  + '\', \'' + films[i]['pid'] + '\', \'film\',  \'' + films[i]['title'].replace(/\//g, "\\\\").replace(/'/g, "\\\'") + '\', \'' + films[i]['startTime'] + '\', \'' + films[i]['endTime'] + '\', \'' + films[i]['venue'] + '\')"></a></li>';
 			}
 			$('#name-filmsDates').html('<h2>Films on ' + dateString  + '</h2>');
 			$('#list-filmsDates').html(htmlString);
@@ -352,19 +354,23 @@
 			{
 				$('#list-filmsDates').trigger('create');
 			}
-			for (var i = 0; i < themeB.length; i++)
+			for (var i = 0; i < scheduledFilms.length; i++)
 			{
-				$(themeB[i]).addClass('ui-btn-active');		
+				$(scheduledFilms[i]).addClass('ui-btn-active');		
 			}
 		}
 
-		function showFilmDetail(pid, filmId){
+		function showFilmDetail(pid, filmId, isLoading){
+			if (isLoading)
+			{
+				$('body').addClass('ui-loading');		
+			}
 			localStorage['currentFilmDetail'] = pid;
 			localStorage['currentFilmId'] = filmId;
 			if (filmId != 'null')
 			{
 				$('#div-multipleFilmDetails').empty();
-				showSingleFilmDetail(pid, filmId, true, false);
+				showSingleFilmDetail(pid, filmId, true, false, isLoading);
 				return;
 			}
 			var tag;
@@ -390,20 +396,20 @@
 			else if (films.length == 1)
 			{
 				$('#div-multipleFilmDetails').empty();
-				showSingleFilmDetail(pid, films[0], true, false);		
+				showSingleFilmDetail(pid, films[0], true, false, isLoading);		
 			}
 			else
 			{
-				showMultipleFilmDetails(pid, films, tag);
+				showMultipleFilmDetails(pid, films, tag, isLoading);
 			}
 
 		}
 
-		function showMultipleFilmDetails(pid, films, tag){
+		function showMultipleFilmDetails(pid, films, tag, isLoading){
 			var htmlString = '<div align="center" style="padding: 0px 10px"><h3>' + tag.find('title').text() + '</h3></div><div style="padding: 0px 10px"><p><small>' + tag.find('description').text() + '</small></p></div><div align="center" style="padding: 0px 10px"><legend><strong>' + films.length + ' films available</strong></legend><div data-role="controlgroup" data-type="horizontal">';
 			for (var i = 0; i < films.length; i++)
 			{
-				htmlString += '<input type="radio" id="radio-filmDetail' + i + '" onclick="showSingleFilmDetail(' + pid + ', ' + films[i] + ', ' + 'false, true' + ')" name="radio-filmDetail" value="' + i + '"';
+				htmlString += '<input type="radio" id="radio-filmDetail' + i + '" onclick="showSingleFilmDetail(' + pid + ', ' + films[i] + ', ' + 'false, true, false' + ')" name="radio-filmDetail" value="' + i + '"';
 				if (i == 0)
 				{
 					htmlString += ' checked="checked" />';		
@@ -417,10 +423,10 @@
 			htmlString += '</div></div>';
 			$('#div-multipleFilmDetails').html(htmlString);
 			$('#div-multipleFilmDetails').trigger('create');
-			showSingleFilmDetail(pid, films[0], true, false);
+			showSingleFilmDetail(pid, films[0], true, false, isLoading);
 		}
 
-		function showSingleFilmDetail(pid, filmId, refreshListview, refreshRadio){
+		function showSingleFilmDetail(pid, filmId, refreshListview, refreshRadio, isLoading){
 			localStorage['currentFilmDetail'] = pid;
 			var tag;
 
@@ -439,6 +445,10 @@
 
 						if (!refreshListview)
 						{
+							if (isLoading)
+							{
+								$('body').removeClass('ui-loading');		
+							}
 							return false;
 						}
 						htmlString = '';
@@ -489,6 +499,10 @@
 						else
 						{
 							$('#list-filmDetail').trigger('create');
+						}
+						if (isLoading)
+						{
+							$('body').removeClass('ui-loading');		
 						}
 						return false;
 					}
@@ -555,7 +569,7 @@
 					});
 					localStorage['schedule'] = JSON.stringify(schedule);
 				}			
-				themeB.push('#' + id);
+				scheduledFilms.push('#' + id);
 			}
 			else
 			{
@@ -567,7 +581,7 @@
 						localStorage['schedule'] = JSON.stringify(schedule);
 					}
 				}
-				themeB.splice(themeB.indexOf('#' + id), 1);
+				scheduledFilms.splice(scheduledFilms.indexOf('#' + id), 1);
 			}
 		}
 
@@ -588,7 +602,7 @@
 					currentSort = tag.attr('sort');		
 					htmlString += '<li data-role="list-divider">' + currentSort + '</li>';
 				}
-				htmlString += '<li><a href="#filmDetail" onclick="showFilmDetail(\'' + tag.attr('program_item_id')  + '\', \'' + tag.attr('id') + '\')">' + tag.find('title').text()  + '</a></li>';		
+				htmlString += '<li><a href="#filmDetail" onclick="showFilmDetail(\'' + tag.attr('program_item_id')  + '\', \'' + tag.attr('id') + '\', true)">' + tag.find('title').text()  + '</a></li>';		
 			});
 			$('#list-allFilms').html(htmlString);
 			if ($('#list-allFilms').hasClass('ui-listview'))
@@ -672,91 +686,84 @@
 			$('#content-dvdDetail').append(filmContentDiv);					
 		}
 		
-		function loadForums(forums){	
-			var lastDate= new Date();
-			$(forums).find('schedule').each(function(index){
-				var item = $('<li/>');
-				var link = $('<a/>');
-				var tag = $(this);
-				var id = tag.attr('mobile_item_id');	
-				var title = $('<div/>').html(tag.attr('title'));				
-				title.css('text-overflow','ellipsis');
-				title.css('overflow','hidden');
-				var startTime = tag.attr('start_time');
-				var fullDateArray = startTime.split(' ');
-				var dateArray = fullDateArray[0].split('-');
-				var timeArray = fullDateArray[1].split(':');
-				var s = new Date(dateArray[0],dateArray[1],dateArray[2],timeArray[0],timeArray[1],timeArray[2],0);
-				var ampm = '';
-				if(s.getHours()>=12)
-					ampm='PM';
-				else
-				    ampm='AM';
-				var startTimeSpan = $('<span/>').html(''+s.getHours()%12+':'+('0'+s.getMinutes()).slice(-2)+ampm);
-				var endTime =  tag.attr('end_time');
-				var fullDateArraye = endTime.split(' ');
-				var dateArraye = fullDateArraye[0].split('-');
-				var timeArraye = fullDateArraye[1].split(':');
-				var e = new Date(dateArraye[0],dateArraye[1],dateArraye[2],timeArraye[0],timeArraye[1],timeArraye[2],0);
-				var endTimeSpan = $('<span/>').html(' - '+e.getHours()%12+':'+('0'+e.getMinutes()).slice(-2)+ampm);
-				var venue =  $('<span/>').html('Venue: '+tag.attr('venue'));
-				venue.css('margin','0 0 0 2em');
-				var lowerDiv = $('<p/>');
-				
-				lowerDiv.append(startTimeSpan);
-				lowerDiv.append(endTimeSpan);
-				lowerDiv.append(venue);
-				link.append(title);
-				link.append($('<small/>').html(lowerDiv));	
-				link.attr('href','#forumDetail');
-				(function(programId){
-					link.click(function(){
-						localStorage['current_forum_detail']=''+programId;
-						loadForum(programId);
-					});
-				})(id);
-						
-				var sdate = s.toString().split(' ');
-				if((lastDate.getYear()!=s.getYear())||(lastDate.getMonth() != s.getMonth())||(lastDate.getDate() != s.getDate())){
-						var divider = $('<li/>');
-						divider.attr('data-role','list-divider');
-						divider.html(sdate[1]+' '+sdate[2]+','+sdate[3]);
-						$('#list-forums').append(divider);	
-						lastDate = s;
-					}
-				item.append(link);
-				var cbutton = $('<a data-rel="popup" data-position-to="window" data-transition="pop">Save to Schedule</a>');
-				cbutton.mousedown(function(){
-					console.log(cbutton.attr('data-theme'));
-					if(cbutton.attr('data-theme')=='a')
-						cbutton.buttonMarkup({theme:'b'}).button();
-					else
-						cbutton.buttonMarkup({theme:'a'}).button();
-					$('#list-forums').listview('refresh');	
-				});
-				item.append(cbutton);
-				$('#list-forums').append(item);				
-			});
-			if ($('#list-forums').hasClass('ui-listview'))
-				$('#list-forums').listview('refresh');		
-			else{
-				$('#list-forums').trigger('create');
-				console.log('create list froum');
+		function loadForums(){	
+			if (typeof forums == 'undefined')
+			{
+				forums = $(localStorage['events']).find('forums').find('schedule');
+			}
+			var startTime;
+			var endTime;
+			var scheduled;
+			var currentDate = '';
+			var nextDate;
+			var dateParts;
+			var dateDisplay;
+			var forum;
+			var htmlString = '';
+			for (var i = 0; i < forums.length; i++)
+			{
+				forum = $(forums[i]);
+				nextDate = forum.attr('start_time').split(' ')[0];
+				if (nextDate != currentDate)
+				{
+					dateParts = nextDate.split('-');
+					dateDisplay = dateParts[1] + '-' + dateParts[2] + '-' + dateParts[0];
+					htmlString += '<li data-role="list-divider">' + weekDay[(new Date(dateParts[0], dateParts[1] - 1, dateParts[2])).getDay()] + ', ' + dateDisplay  + '</li>';
+					currentDate = nextDate;
 				}
+				scheduled = false;
+				startTime = forum.attr('start_time').split(' ')[1].split(':');
+				endTime = forum.attr('end_time').split(' ')[1].split(':');
+				if (typeof schedule != 'undefined')
+				{
+					for (var j = 0; j < schedule['data'].length; j++)
+					{
+						if (forum.attr('id') == schedule['data'][j]['id'])
+						{
+							scheduled = true;	
+							break;
+						}
+					}
+				}
+				if (scheduled)
+				{
+					scheduledForums.push('#' + forum.attr('id'));
+				}
+				htmlString += '<li><a href="#forumDetail" onclick="loadForum(' + forum.attr('mobile_item_id') + ', true)">' + '<h1>' + forum.attr('title')  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + forum.attr('venue')  + '</small></p></a><a href="" id="' + forum.attr('id')  + '" onclick="updateScheduleForums(\'' + forum.attr('id')  + '\', \'' + forum.attr('mobile_item_id') + '\', \'forum\',  \'' + forum.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + forum.attr('start_time') + '\', \'' + forum.attr('end_time') + '\', \'' + forum.attr('venue') + '\')"></a></li>';
+			}
+			$('#list-forums').html(htmlString);				
+			if ($('#list-forums').hasClass('ui-listview'))
+			{
+				$('#list-forums').listview('refresh');		
+			}
+			else
+			{
+				$('#list-forums').trigger('create');
+			}
 		}
 		
-		function loadForum(forumId){	
+		function loadForum(forumId, isLoading){	
+			if (isLoading)
+			{
+				$('body').addClass('ui-loading');
+			}
+			localStorage['current_forum_detail'] = forumId;
 			if(festival==null)
+			{
 				festival=localStorage['festival'];
+			}
 			var forum = $(festival).find('program_item[id='+forumId+']');
 			$('#content-forumDetail').empty();
 			var dvdHandle = $(forum);
-			var title = $('<p/>').html($('<h3/>').html(dvdHandle.find('title').text()));	
-			title.css('text-align','center');
-			var description = $('<div/>').html($('<small/>').html(dvdHandle.find('description').text()));	
-			description.css('margin','0 1em 0 1em');
-			$('#content-forumDetail').append(title);
-			$('#content-forumDetail').append(description);	
+			var htmlString = '<div align="center"><h3>' + dvdHandle.find('title').text() + '</div><p><small>' + dvdHandle.find('description').text() + '</small></p>';	
+			$('#content-forumDetail').html(htmlString);	
+			if (isLoading)
+			{
+				$('body').removeClass('ui-loading');
+			}
+		}
+
+		function updateScheduleForums(id, pid, type, title, startTime, endTime, venue){
 		}
 		
 		function getSchedules(){
@@ -822,23 +829,6 @@
 			});
 		}
 		
-		function getForums(){
-			$.ajax({
-				type: "GET",
-				url: proxy + "type=xml&name=events",
-				success: function(xml){
-					var event = xml;
-					var forums = $(event).find('forums');
-					localStorage['forums'] = xml;
-					console.log('ajax success for forums');
-					loadForums(forums);
-				},
-				error: function(xhr){
-					console.log('ajax failed for schedules' + xhr.statusText);		
-				}
-			});
-		}
-		
 		function cp_schedule(){
 			$.mobile.changePage('#schedule');		
 			$.mobile.showPageLoadingMsg();
@@ -855,11 +845,12 @@
 				beforeSend: function(xhr){
 				},
 				success: function(xml){
-					events= xml;
-					special_events = $(events).find('special_events');
-					localStorage['events'] = events;
+					localStorage['events'] = xml;
+					special_events = $(xml).find('special_events').find('schedule');
+					forums = $(xml).find('forums').find('schedule');
 					console.log('ajax success for events');
 					loadEvents();
+					loadForums();
 				},
 				error: function(xhr){
 					console.log('ajax failed for events:' + xhr.statusText);
@@ -870,104 +861,95 @@
 		}
 
 		function loadEvents(){	
-			var lastDate= new Date();
-			$(special_events).find('schedule').each(function(index){
-				var item = $('<li/>');
-				var link = $('<a/>');
-				var tag = $(this);
-				var id = tag.attr('mobile_item_id');	
-				var title = $('<div/>').html(tag.attr('title'));				
-				title.css('text-overflow','ellipsis');
-				title.css('overflow','hidden');
-				var startTime = tag.attr('start_time');
-				var fullDateArray = startTime.split(' ');
-				var dateArray = fullDateArray[0].split('-');
-				var timeArray = fullDateArray[1].split(':');
-				var s = new Date(dateArray[0],dateArray[1],dateArray[2],timeArray[0],timeArray[1],timeArray[2],0);
-				var ampm = '';
-				if(s.getHours()>=12)
-					ampm='PM';
-				else
-				    ampm='AM';
-				var startTimeSpan = $('<span/>').html(''+s.getHours()%12+':'+('0'+s.getMinutes()).slice(-2)+ampm);
-				var endTime =  tag.attr('end_time');
-				var fullDateArraye = endTime.split(' ');
-				var dateArraye = fullDateArraye[0].split('-');
-				var timeArraye = fullDateArraye[1].split(':');
-				var e = new Date(dateArraye[0],dateArraye[1],dateArraye[2],timeArraye[0],timeArraye[1],timeArraye[2],0);
-				var endTimeSpan = $('<span/>').html(' - '+e.getHours()%12+':'+('0'+e.getMinutes()).slice(-2)+ampm);
-				var venue =  $('<span/>').html('Venue: '+tag.attr('venue'));
-				venue.css('margin','0 0 0 2em');
-				var lowerDiv = $('<div/>');
-				
-				lowerDiv.append(startTimeSpan);
-				lowerDiv.append(endTimeSpan);
-				lowerDiv.append(venue);
-				link.append(title);
-				link.append($('<small/>').html(lowerDiv));	
-				link.click(function(){
-						localStorage['current_event_detail']=''+id;
-						getEvent(id);
-						$.mobile.changePage('#eventDetail')  
-					});
-						
-				var sdate = s.toString().split(' ');
-				if((lastDate.getYear()!=s.getYear())||(lastDate.getMonth() != s.getMonth())||(lastDate.getDate() != s.getDate())){
-						var divider = $('<li/>');
-						divider.attr('data-role','list-divider');
-						divider.html(sdate[1]+' '+sdate[2]+','+sdate[3]);
-						$('#list-events').append(divider);	
-						lastDate = s;
-					}
-				item.append(link);
-				var cbutton = $('<a data-rel="popup" data-position-to="window" data-transition="pop">Save to Schedule</a>');
-				cbutton.mousedown(function(){
-					console.log(cbutton.attr('data-theme'));
-					if(cbutton.attr('data-theme')=='a')
-						cbutton.buttonMarkup({theme:'b'}).button();
-					else
-						cbutton.buttonMarkup({theme:'a'}).button();
-					$('#list-events').listview('refresh');	
-				});
-				item.append(cbutton);
-				$('#list-events').append(item);				
-			});
-			if ($('#list-events').hasClass('ui-listview'))
-				$('#list-events').listview('refresh');		
-			else{
-				$('#list-events').trigger('create');
-				console.log('create list event');
+			if (typeof special_events == 'undefined')
+			{
+				special_events = $(localStorage['events']).find('special_events').find('schedule');
+			}
+			var startTime;
+			var endTime;
+			var scheduled;
+			var currentDate = '';
+			var nextDate;
+			var dateParts;
+			var dateDisplay;
+			var special_event;
+			var htmlString = '';
+			for (var i = 0; i < special_events.length; i++)
+			{
+				special_event = $(special_events[i]);
+				nextDate = special_event.attr('start_time').split(' ')[0];
+				if (nextDate != currentDate)
+				{
+					dateParts = nextDate.split('-');
+					dateDisplay = dateParts[1] + '-' + dateParts[2] + '-' + dateParts[0];
+					htmlString += '<li data-role="list-divider">' + weekDay[(new Date(dateParts[0], dateParts[1] - 1, dateParts[2])).getDay()] + ', ' + dateDisplay  + '</li>';
+					currentDate = nextDate;
 				}
+				scheduled = false;
+				startTime = special_event.attr('start_time').split(' ')[1].split(':');
+				endTime = special_event.attr('end_time').split(' ')[1].split(':');
+				if (typeof schedule != 'undefined')
+				{
+					for (var j = 0; j < schedule['data'].length; j++)
+					{
+						if (special_event.attr('id') == schedule['data'][j]['id'])
+						{
+							scheduled = true;	
+							break;
+						}
+					}
+				}
+				if (scheduled)
+				{
+					scheduledForums.push('#' + special_event.attr('id'));
+				}
+				htmlString += '<li><a href="#eventDetail" onclick="getEvent(' + special_event.attr('mobile_item_id') + ', true)">' + '<h1>' + special_event.attr('title')  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + special_event.attr('venue')  + '</small></p></a><a href="" id="' + special_event.attr('id')  + '" onclick="updateScheduleSpecialEvents(\'' + special_event.attr('id')  + '\', \'' + special_event.attr('mobile_item_id') + '\', \'special_event\',  \'' + special_event.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + special_event.attr('start_time') + '\', \'' + special_event.attr('end_time') + '\', \'' + special_event.attr('venue') + '\')"></a></li>';
+			}
+			$('#list-events').html(htmlString);				
+			if ($('#list-events').hasClass('ui-listview'))
+			{
+				$('#list-events').listview('refresh');	
+			}
+			else
+			{
+				$('#list-events').trigger('create');
+			}
 		}
 
-		function getEvent(eventId){
+		function updateScheduleSpecialEvents(id, pid, type, title, startTime, endTime, venue){
+		}
+
+		function getEvent(eventId, isLoading){
+			if (isLoading)
+			{
+				$('body').addClass('ui-loading');		
+			}
+			localStorage['current_event_detail'] = eventId;
+			$('#content-eventDetail').empty();
 			$.ajax({
 				type: "GET",
 				url: proxy + "type=xml&name=items&id=" + eventId,
 				beforeSend: function(xhr){
 				},
 				success: function(xml){
-					var event= xml;
-					console.log('ajax success for event');
-					loadEvent(event);
+					loadEvent(xml);
 				},
 				error: function(xhr){
 					console.log('ajax failed for events:' + xhr.statusText);
 				},
 				complete: function(xhr){
+					if (isLoading)
+					{
+						$('body').removeClass('ui-loading');		
+					}
 				}
 			});
 		}
 
-		function loadEvent(event){	
-			$('#top-eventDetail').empty();
-			var eventHandle = $(event);
-			var title = $('<p/>').html($('<h3/>').html(eventHandle.find('title').text()));	
-			title.css('text-align','center');
-			var description = $('<div/>').html($('<small/>').html(eventHandle.find('description').text()));	
-			description.css('margin','0 1em 0 1em');
-			$('#top-eventDetail').append(title);
-			$('#top-eventDetail').append(description);	
+		function loadEvent(special_event){	
+			var eventHandle = $(special_event);
+			var htmlString = '<div align="center"><h3>' + eventHandle.find('title').text().replace(/&lt;br&gt;/g, '<br />') + '</h3></div><p><small>' + eventHandle.find('description').text().replace(/&lt;br&gt;/g, '<br />').replace(/&lt;/g, '<').replace(/&gt;/g, '>') + '</small></p>';	
+			$('#content-eventDetail').html(htmlString);
 		}
 
 		function sortMySchedule(){
@@ -1030,9 +1012,9 @@
 				htmlString += '<li><a ';
 				if (schedule['data'][i]['type'] == 'film')
 				{
-					htmlString += ' href="#filmDetail" onclick="showFilmDetail(\'' + schedule['data'][i]['pid']  + '\', \'null\')"><h1>';
+					htmlString += ' href="#filmDetail" onclick="showFilmDetail(\'' + schedule['data'][i]['pid']  + '\', \'null\', true)"><h1>';
 				}
-				else if (schedule['data'][i]['type'] == 'event')
+				else if (schedule['data'][i]['type'] == 'special_event')
 				{
 							
 				}
@@ -1245,7 +1227,7 @@
 			<a href="#schedule" onclick="loadMySchedule()" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
 		</div>
 
-		<div id="content-forumDetail" data-role="content" style="padding: 0px 0px">
+		<div id="content-forumDetail" data-role="content">
 
 		</div>
 
@@ -1259,10 +1241,7 @@
 			<a href="#schedule" onclick="loadMySchedule()" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
 		</div>
 
-		<div id="content-eventDetail" data-role="content" style="padding: 0px 0px">
-			<div id="top-eventDetail">
-			</div>
-
+		<div id="content-eventDetail" data-role="content">
 		</div>
 
 	</div>
