@@ -242,6 +242,7 @@
 					{
 						loadEvent(localStorage['current_event_detail']);
 					}
+					// loadMySchedule();
 				},
 				error: function(xhr){
 					console.log('ajax failed for festival:' + xhr.statusText);
@@ -339,8 +340,7 @@
 				{
 					themeB.push('#' + films[i]['id']);
 				}
-				htmlString += '<li><a href="#filmDetail" id="s' + films[i]['id'] + '" onclick="showFilmDetail(\'' + films[i]['pid']  + '\', \'null\')">' + '<h1>' + films[i]['title']  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + films[i]['venue']  + '</small>';
-				htmlString += '</p></a><a href="" id="' + films[i]['id']  + '" onclick="updateScheduleFilms(\'' + films[i]['id']  + '\', \'' + films[i]['pid'] + '\', \'film\',  \'' + films[i]['title'].replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + films[i]['startTime'] + '\', \'' + films[i]['endTime'] + '\', \'' + films[i]['venue'] + '\')"></a></li>';
+				htmlString += '<li><a href="#filmDetail" id="s' + films[i]['id'] + '" onclick="showFilmDetail(\'' + films[i]['pid']  + '\', \'null\')">' + '<h1>' + films[i]['title']  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + films[i]['venue']  + '</small></p></a><a href="" id="' + films[i]['id']  + '" onclick="updateScheduleFilms(\'' + films[i]['id']  + '\', \'' + films[i]['pid'] + '\', \'film\',  \'' + films[i]['title'].replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + films[i]['startTime'] + '\', \'' + films[i]['endTime'] + '\', \'' + films[i]['venue'] + '\')"></a></li>';
 			}
 			$('#name-filmsDates').html('<h2>Films on ' + dateString  + '</h2>');
 			$('#list-filmsDates').html(htmlString);
@@ -472,7 +472,7 @@
 								{
 									htmlString += ' style="background-color: #387bbe" ';		
 								}
-								htmlString += ' onclick="updateScheduleFilms(\'fd' + tag.attr('id')  + '\', \'' + tag.attr('program_item_id') + '\', \'film\', \'' + tag.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + tag.attr('startTime') + '\', \'' + tag.attr('endTime') + '\', \'' + tag.attr('venue') + '\')">' + '<h1>' + weekDay[(new Date(dateParts[0], dateParts[1] - 1, dateParts[2])).getDay()] + ', ' + dateDisplay + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + tag.attr('venue') + '</small>';
+								htmlString += ' onclick="updateScheduleFilms(\'fd' + tag.attr('id')  + '\', \'' + tag.attr('program_item_id') + '\', \'film\', \'' + tag.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + tag.attr('start_time') + '\', \'' + tag.attr('end_time') + '\', \'' + tag.attr('venue') + '\')">' + '<h1>' + weekDay[(new Date(dateParts[0], dateParts[1] - 1, dateParts[2])).getDay()] + ', ' + dateDisplay + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + tag.attr('venue') + '</small>';
 								if (scheduled)
 								{
 									htmlString += '<span class="schedule"><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Scheduled)</small></span>';		
@@ -555,6 +555,7 @@
 					});
 					localStorage['schedule'] = JSON.stringify(schedule);
 				}			
+				themeB.push('#' + id);
 			}
 			else
 			{
@@ -566,39 +567,8 @@
 						localStorage['schedule'] = JSON.stringify(schedule);
 					}
 				}
+				themeB.splice(themeB.indexOf('#' + id), 1);
 			}
-		}
-
-		function loadMySchedule(){
-			if (typeof schedule == 'undefined')
-			{
-				$('#list-schedule').empty();
-				return;
-			}
-			if (schedule['data'].length == 0)
-			{
-				$('#list-schedule').empty();
-				return;
-			}
-			var htmlString ='';
-			for (var i = 0; i < schedule['data'].length; i++)
-			{
-				
-			}
-		}
-
-		function sortMySchedule(){
-			schedule['data'].sort(function(a, b){
-				if (a.startTime > b.startTime)
-				{
-					return 1;		
-				}
-				if (a.startTime < b.startTime)
-				{
-					return -1;
-				}
-				return 0;
-			});
 		}
 
 		function loadAllFilms(){
@@ -842,7 +812,6 @@
 				url: proxy + "type=dvd&id="+dvdId,
 				success: function(xml){
 					var dvd = xml;
-					localStorage['dvd'+dvdId] = xml;
 					localStorage['current_dvd_detail']=xml;
 					console.log('ajax success for dvds');
 					loadDVD(dvd);
@@ -1001,6 +970,94 @@
 			$('#top-eventDetail').append(description);	
 		}
 
+		function sortMySchedule(){
+
+			schedule['data'].sort(function(a, b){
+				if (a.startTime > b.startTime)
+				{
+					return 1;		
+				}
+				if (a.startTime < b.startTime)
+				{
+					return -1;
+				}
+				if (a.endTime > b.endTime)
+				{
+					return 1;		
+				}
+				if (a.endTime < b.endTime)
+				{
+					return -1;
+				}
+				return 0;
+			});
+		}
+
+		function loadMySchedule(){
+			if (typeof schedule == 'undefined')
+			{
+				$('#list-schedule').empty();
+				$('#schedule-noContent').show();
+				return;
+			}
+			if (schedule['data'].length == 0)
+			{
+				$('#list-schedule').empty();
+				$('#schedule-noContent').show();
+				return;
+			}
+			$('#schedule-noContent').hide();
+			sortMySchedule();
+			localStorage['schedule'] = JSON.stringify(schedule);
+			var htmlString ='';
+			var startTime;
+			var endTime;
+			var dateParts;
+			var nextDate;
+			var currentDate = '';
+			for (var i = 0; i < schedule['data'].length; i++)
+			{
+				nextDate = schedule['data'][i]['startTime'].split(' ')[0];
+				if (nextDate !== currentDate)
+				{
+					dateParts = nextDate.split('-');
+					dateDisplay = dateParts[1] + '-' + dateParts[2] + '-' + dateParts[0];
+					htmlString += '<li data-role="list-divider">' + weekDay[(new Date(dateParts[0], dateParts[1] - 1, dateParts[2])).getDay()] + ', ' + dateDisplay  + '</li>';
+					currentDate = nextDate;
+				}
+				startTime = schedule['data'][i]['startTime'].split(' ')[1].split(':');
+				endTime = schedule['data'][i]['endTime'].split(' ')[1].split(':');
+				htmlString += '<li><a ';
+				if (schedule['data'][i]['type'] == 'film')
+				{
+					htmlString += ' href="#filmDetail" onclick="showFilmDetail(\'' + schedule['data'][i]['pid']  + '\', \'null\')"><h1>';
+				}
+				else if (schedule['data'][i]['type'] == 'event')
+				{
+							
+				}
+				else if (schedule['data'][i]['type'] == 'forum')
+				{
+						
+				}
+				else
+				{
+					// it should never get here !!!
+					htmlString += ' href="" onclick="alert(\'No information available.\');"><h1>';
+				}
+				htmlString += schedule['data'][i]['title'] + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + schedule['data'][i]['venue']  + '</small></p></a><a href="" onclick="" ></a></li>';
+			}
+			$('#list-schedule').html(htmlString);
+			if ($('#list-schedule').hasClass('ui-listview'))
+			{
+				$('#list-schedule').listview('refresh');		
+			}
+			else
+			{
+				$('#list-schedule').trigger('create');
+			}
+		}
+
 
 	</script>
 </head>
@@ -1011,7 +1068,7 @@
 
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>Cinequest</h1>
-			<a href="#schedule" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
+			<a href="#schedule" onclick="loadMySchedule()" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
 			<div data-role="navbar">
 				<ul>
 					<li><a class="ui-btn-active ui-state-persist">Home</a></li>
@@ -1036,7 +1093,7 @@
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>Cinequest</h1>
-			<a href="#schedule" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
+			<a href="#schedule" onclick="loadMySchedule()" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
 		</div>
 
 		<div data-role="content" id="content-homeDetail">
@@ -1050,7 +1107,7 @@
 
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>Cinequest</h1>
-			<a href="#schedule" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
+			<a href="#schedule" onclick="loadMySchedule()" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
 			<div data-role="navbar">
 				<ul>
 					<li><a href="#index">Home</a></li>
@@ -1107,7 +1164,7 @@
 
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>Cinequest</h1>
-			<a href="#schedule" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
+			<a href="#schedule" onclick="loadMySchedule()" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
 			<div data-role="navbar">
 				<ul>
 					<li><a href="#index">Home</a></li>
@@ -1130,7 +1187,7 @@
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>Cinequest</h1>
-			<a href="#schedule" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
+			<a href="#schedule" onclick="loadMySchedule()" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
 		</div>
 
 		<div id="content-dvdDetail" data-role="content" style="padding: 0px 0px">
@@ -1144,7 +1201,7 @@
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>Cinequest</h1>
-			<a href="#schedule" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
+			<a href="#schedule" onclick="loadMySchedule()" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
 		</div>
 
 		<div data-role="content">
@@ -1164,7 +1221,7 @@
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>Cinequest</h1>
-			<a href="#schedule" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
+			<a href="#schedule" onclick="loadMySchedule()" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
 		</div>
 
 		<div id="content-filmDetail" data-role="content" style="padding: 0px 0px">
@@ -1185,7 +1242,7 @@
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>Cinequest</h1>
-			<a href="#schedule" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
+			<a href="#schedule" onclick="loadMySchedule()" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
 		</div>
 
 		<div id="content-forumDetail" data-role="content" style="padding: 0px 0px">
@@ -1199,7 +1256,7 @@
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>Cinequest</h1>
-			<a href="#schedule" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
+			<a href="#schedule" onclick="loadMySchedule()" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
 		</div>
 
 		<div id="content-eventDetail" data-role="content" style="padding: 0px 0px">
@@ -1215,7 +1272,7 @@
 
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>Cinequest</h1>
-			<a href="#schedule" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
+			<a href="#schedule" onclick="loadMySchedule()" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
 		</div>
 
 		<div data-role="content" id="content-allFilms">
@@ -1231,11 +1288,12 @@
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>My Cinequest<br /> Schedule</h1>
-			<a class="ui-btn-right" data-icon="delete" data-iconpos="right">Delete</a>
+			<a href="" class="ui-btn-right ui-disabled" onclick="deleteSchedules()" data-icon="delete" data-iconpos="right">Delete</a>
 		</div>
 
 		<div data-role="content">
-			<ul id="list-schedule" data-role="listview" data-inset="true">
+			<p id="schedule-noContent" style="display:none"><small>You have not added any films/events/forums to your Cinequest schedule. To add an item to your Cinequest schedule, tap on the check icon to the right of the item.</small></p>
+			<ul id="list-schedule" data-role="listview" data-inset="true" data-split-icon="delete" data-split-theme="a">
 			</ul>
 		</div>
 		
