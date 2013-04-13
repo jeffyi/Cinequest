@@ -140,6 +140,7 @@
 			});
 		});
 
+///////////////////////////////////////////////////////////////////////////////////////////////
 		function getHomeData(){
 			$.ajax({
 				type: "GET",
@@ -155,6 +156,7 @@
 			});
 		}
 
+///////////////////////////////////////////////////////////////////////////////////////////////
 		function loadHomeData(){
 				$('#img-index').html('<img src="' + $(homeData[0]).find('imageURL').text() + '" style="max-width: 100%" />');
 				var htmlString = '';
@@ -181,6 +183,7 @@
 				}
 		}
 
+///////////////////////////////////////////////////////////////////////////////////////////////
 		function getHomeDetail(pid, isLoading){
 			localStorage['currentHomeDetail'] = pid;
 			$('#content-homeDetail').empty();
@@ -206,6 +209,7 @@
 			});
 		}
 
+///////////////////////////////////////////////////////////////////////////////////////////////
 		function getFestival(){
 			$.ajax({
 				type: "GET",
@@ -227,7 +231,7 @@
 					}
 					if (typeof localStorage['currentFilmDetail'] != 'undefined')
 					{
-						showFilmDetail(localStorage['currentFilmDetail'], localStorage['currentFilmId'], false);		
+						showFilmDetail(localStorage['currentFilmDetail'], localStorage['currentFilmId']);		
 					}
 					if (typeof localStorage['currentHomeDetail'] != 'undefined')
 					{
@@ -245,7 +249,7 @@
 					{
 						getEvent(localStorage['current_event_detail'], false);
 					}
-					// loadMySchedule();
+					loadMySchedule();
 				},
 				error: function(xhr){
 					console.log('ajax failed for festival:' + xhr.statusText);
@@ -256,6 +260,7 @@
 			});
 		}
 
+///////////////////////////////////////////////////////////////////////////////////////////////
 		function loadDates(){
 			var currentDate = '';
 			var dateParts;
@@ -305,6 +310,7 @@
 			}
 		}
 
+///////////////////////////////////////////////////////////////////////////////////////////////
 		function convertTime(h, m){
 			if (h < 12)
 			{
@@ -316,6 +322,7 @@
 			}
 		}
 
+///////////////////////////////////////////////////////////////////////////////////////////////
 		function listFilms(dateString){
 			localStorage['currentDateFilms'] = dateString;
 			var films = filmsDates[dateString];
@@ -343,7 +350,7 @@
 				{
 					scheduledFilms.push('#' + films[i]['id']);
 				}
-				htmlString += '<li><a href="#filmDetail" id="s' + films[i]['id'] + '" onclick="showFilmDetail(\'' + films[i]['pid']  + '\', \'null\', true)">' + '<h1>' + films[i]['title']  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + films[i]['venue']  + '</small></p></a><a href="" id="' + films[i]['id']  + '" onclick="updateScheduleFilms(\'' + films[i]['id']  + '\', \'' + films[i]['pid'] + '\', \'film\',  \'' + films[i]['title'].replace(/\//g, "\\\\").replace(/'/g, "\\\'") + '\', \'' + films[i]['startTime'] + '\', \'' + films[i]['endTime'] + '\', \'' + films[i]['venue'] + '\')"></a></li>';
+				htmlString += '<li><a href="#filmDetail" id="s' + films[i]['id'] + '" onclick="showFilmDetail(\'' + films[i]['pid']  + '\', \'null\')">' + '<h1>' + films[i]['title']  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + films[i]['venue']  + '</small></p></a><a href="" id="' + films[i]['id']  + '" onclick="updateSchedule(\'' + films[i]['id']  + '\', \'' + films[i]['pid'] + '\', \'film\',  \'' + films[i]['title'].replace(/\//g, "\\\\").replace(/'/g, "\\\'") + '\', \'' + films[i]['startTime'] + '\', \'' + films[i]['endTime'] + '\', \'' + films[i]['venue'] + '\')"></a></li>';
 			}
 			$('#name-filmsDates').html('<h2>Films on ' + dateString  + '</h2>');
 			$('#list-filmsDates').html(htmlString);
@@ -361,17 +368,14 @@
 			}
 		}
 
-		function showFilmDetail(pid, filmId, isLoading){
-			if (isLoading)
-			{
-				$('body').addClass('ui-loading');		
-			}
+///////////////////////////////////////////////////////////////////////////////////////////////
+		function showFilmDetail(pid, filmId){
 			localStorage['currentFilmDetail'] = pid;
 			localStorage['currentFilmId'] = filmId;
 			if (filmId != 'null')
 			{
 				$('#div-multipleFilmDetails').empty();
-				showSingleFilmDetail(pid, filmId, true, false, isLoading);
+				showSingleFilmDetail(pid, filmId, true, false);
 				return;
 			}
 			var tag;
@@ -397,20 +401,20 @@
 			else if (films.length == 1)
 			{
 				$('#div-multipleFilmDetails').empty();
-				showSingleFilmDetail(pid, films[0], true, false, isLoading);		
+				showSingleFilmDetail(pid, films[0], true, false);		
 			}
 			else
 			{
-				showMultipleFilmDetails(pid, films, tag, isLoading);
+				showMultipleFilmDetails(pid, films, tag);
 			}
 
 		}
 
-		function showMultipleFilmDetails(pid, films, tag, isLoading){
+		function showMultipleFilmDetails(pid, films, tag){
 			var htmlString = '<div align="center" style="padding: 0px 10px"><h3>' + tag.find('title').text() + '</h3></div><div style="padding: 0px 10px"><p><small>' + tag.find('description').text() + '</small></p></div><div align="center" style="padding: 0px 10px"><legend><strong>' + films.length + ' films available</strong></legend><div data-role="controlgroup" data-type="horizontal">';
 			for (var i = 0; i < films.length; i++)
 			{
-				htmlString += '<input type="radio" id="radio-filmDetail' + i + '" onclick="showSingleFilmDetail(' + pid + ', ' + films[i] + ', ' + 'false, true, false' + ')" name="radio-filmDetail" value="' + i + '"';
+				htmlString += '<input type="radio" id="radio-filmDetail' + i + '" onclick="showSingleFilmDetail(' + pid + ', ' + films[i] + ', ' + 'false, true)" name="radio-filmDetail" value="' + i + '"';
 				if (i == 0)
 				{
 					htmlString += ' checked="checked" />';		
@@ -424,10 +428,11 @@
 			htmlString += '</div></div>';
 			$('#div-multipleFilmDetails').html(htmlString);
 			$('#div-multipleFilmDetails').trigger('create');
-			showSingleFilmDetail(pid, films[0], true, false, isLoading);
+			showSingleFilmDetail(pid, films[0], true, false);
 		}
 
-		function showSingleFilmDetail(pid, filmId, refreshListview, refreshRadio, isLoading){
+///////////////////////////////////////////////////////////////////////////////////////////////
+		function showSingleFilmDetail(pid, filmId, refreshListview, refreshRadio){
 			localStorage['currentFilmDetail'] = pid;
 			var tag;
 
@@ -446,10 +451,6 @@
 
 						if (!refreshListview)
 						{
-							if (isLoading)
-							{
-								$('body').removeClass('ui-loading');		
-							}
 							return false;
 						}
 						htmlString = '';
@@ -483,7 +484,7 @@
 								{
 									htmlString += ' style="background-color: #387bbe" ';		
 								}
-								htmlString += ' onclick="updateScheduleFilms(\'fd' + tag.attr('id')  + '\', \'' + tag.attr('program_item_id') + '\', \'film\', \'' + tag.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + tag.attr('start_time') + '\', \'' + tag.attr('end_time') + '\', \'' + tag.attr('venue') + '\')">' + '<h1>' + weekDay[(new Date(dateParts[0], dateParts[1] - 1, dateParts[2])).getDay()] + ', ' + dateDisplay + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + tag.attr('venue') + '</small>';
+								htmlString += ' onclick="updateSchedule(\'fd' + tag.attr('id')  + '\', \'' + tag.attr('program_item_id') + '\', \'film\', \'' + tag.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + tag.attr('start_time') + '\', \'' + tag.attr('end_time') + '\', \'' + tag.attr('venue') + '\')">' + '<h1>' + weekDay[(new Date(dateParts[0], dateParts[1] - 1, dateParts[2])).getDay()] + ', ' + dateDisplay + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + tag.attr('venue') + '</small>';
 								if (scheduled)
 								{
 									htmlString += '<span class="schedule"><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Scheduled)</small></span>';		
@@ -501,47 +502,52 @@
 						{
 							$('#list-filmDetail').trigger('create');
 						}
-						if (isLoading)
-						{
-							$('body').removeClass('ui-loading');		
-						}
 						return false;
 					}
 				});
 		}
 
-		function updateScheduleFilms(id, pid, type, title, startTime, endTime, venue){
-			if (id.substring(0, 2) == 'fd')
+///////////////////////////////////////////////////////////////////////////////////////////////
+		function updateSchedule(id, pid, type, title, startTime, endTime, venue){
+			var isAdd;
+			if (type == 'film')
 			{
-				if ($('#' + id + ' span.schedule').length == 0)
+				if (id.substring(0, 2) == 'fd')
 				{
-					updateSchedule(id.replace('fd', ''), pid, 'film', title, startTime, endTime, venue, true);
-					$('#' + id + ' > p').append('<span class="schedule"><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Scheduled)</small></span>');
-					$('#' + id).css({'background-color': '#387bbe'});
-					$('#' + id.replace('fd', '')).addClass('ui-btn-active');
+					if ($('#' + id + ' span.schedule').length == 0)
+					{
+						isAdd = true;
+						$('#' + id + ' > p').append('<span class="schedule"><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Scheduled)</small></span>');
+						$('#' + id).css({'background-color': '#387bbe'});
+						$('#' + id.replace('fd', '')).addClass('ui-btn-active');
+					}
+					else
+					{
+						isAdd = false;
+						$('#' + id + ' span.schedule').remove();
+						$('#' + id).css({'background-color': 'rgba(0, 0, 0, 0)'});
+						$('#' + id.replace('fd', '')).removeClass('ui-btn-active');
+					}
+					id = id.substring(2);
 				}
 				else
 				{
-					updateSchedule(id.replace('fd', ''), pid, 'film', title, startTime, endTime, venue, false);
-					$('#' + id + ' span.schedule').remove();
-					$('#' + id).css({'background-color': 'rgba(0, 0, 0, 0)'});
-					$('#' + id.replace('fd', '')).removeClass('ui-btn-active');
+					if ($('#' + id).hasClass('ui-btn-active'))
+					{
+						isAdd = false;
+						$('#' + id).removeClass('ui-btn-active');
+						$('#fd' + id).css({'background-color': 'rgba(0, 0, 0, 0)'});
+						$('#fd' + id.replace('fd', '')).removeClass('ui-btn-active');
+					}
+					else
+					{
+						isAdd = true;
+						$('#' + id).addClass('ui-btn-active');
+						$('#fd' + id + ' > p').append('<span class="schedule"><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Scheduled)</small></span>');
+						$('#fd' + id).css({'background-color': '#387bbe'});
+					}
 				}
-				return;
-			}
-			if ($('#' + id).hasClass('ui-btn-active'))
-			{
-				updateSchedule(id, pid, 'film', title, startTime, endTime, venue, false);
-				$('#' + id).removeClass('ui-btn-active');
-			}
-			else
-			{
-				updateSchedule(id, pid, 'film', title, startTime, endTime, venue, true);
-				$('#' + id).addClass('ui-btn-active');
-			}
-		}
-
-		function updateSchedule(id, pid, type, title, startTime, endTime, venue, isAdd){
+			}		
 			if (isAdd)
 			{
 				if (typeof schedule == 'undefined')
@@ -570,7 +576,10 @@
 					});
 					localStorage['schedule'] = JSON.stringify(schedule);
 				}			
-				scheduledFilms.push('#' + id);
+				if (type == 'film')
+				{
+					scheduledFilms.push('#' + id);
+				}
 			}
 			else
 			{
@@ -582,10 +591,15 @@
 						localStorage['schedule'] = JSON.stringify(schedule);
 					}
 				}
-				scheduledFilms.splice(scheduledFilms.indexOf('#' + id), 1);
+				if (type == 'film')
+				{
+					scheduledFilms.splice(scheduledFilms.indexOf('#' + id), 1);
+				}
 			}
+			loadMySchedule();
 		}
 
+///////////////////////////////////////////////////////////////////////////////////////////////
 		function loadAllFilms(){
 			var htmlString = '';
 			var tag;
@@ -603,7 +617,7 @@
 					currentSort = tag.attr('sort');		
 					htmlString += '<li data-role="list-divider">' + currentSort + '</li>';
 				}
-				htmlString += '<li><a href="#filmDetail" onclick="showFilmDetail(\'' + tag.attr('program_item_id')  + '\', \'' + tag.attr('id') + '\', true)">' + tag.find('title').text()  + '</a></li>';		
+				htmlString += '<li><a href="#filmDetail" onclick="showFilmDetail(\'' + tag.attr('program_item_id')  + '\', \'' + tag.attr('id') + '\')">' + tag.find('title').text()  + '</a></li>';		
 			});
 			$('#list-allFilms').html(htmlString);
 			if ($('#list-allFilms').hasClass('ui-listview'))
@@ -617,6 +631,7 @@
 
 		}
 		
+///////////////////////////////////////////////////////////////////////////////////////////////
 		function loadDVDs(dvds){	
 			var lastSort='0'
 			$(dvds).find('film').each(function(index){
@@ -648,6 +663,7 @@
 			$('#list-dvds:visible').listview('refresh');			
 		}
 		
+///////////////////////////////////////////////////////////////////////////////////////////////
 		function loadDVD(dvd){
 			var dvdHandle = $(dvd);
 			var title = $('<p/>').html(dvdHandle.find('title').text());			
@@ -687,6 +703,7 @@
 			$('#content-dvdDetail').append(filmContentDiv);					
 		}
 		
+///////////////////////////////////////////////////////////////////////////////////////////////
 		function loadForums(){	
 			if (typeof forums == 'undefined')
 			{
@@ -730,7 +747,7 @@
 				{
 					scheduledForums.push('#' + forum.attr('id'));
 				}
-				htmlString += '<li><a href="#forumDetail" onclick="loadForum(' + forum.attr('mobile_item_id') + ', true)">' + '<h1>' + forum.attr('title')  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + forum.attr('venue')  + '</small></p></a><a href="" id="fr' + forum.attr('id')  + '" onclick="updateScheduleForums(\'' + forum.attr('id')  + '\', \'' + forum.attr('mobile_item_id') + '\', \'forum\',  \'' + forum.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + forum.attr('start_time') + '\', \'' + forum.attr('end_time') + '\', \'' + forum.attr('venue') + '\')"></a></li>';
+				htmlString += '<li><a href="#forumDetail" onclick="loadForum(' + forum.attr('mobile_item_id') + ', true)">' + '<h1>' + forum.attr('title')  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + forum.attr('venue')  + '</small></p></a><a href="" id="fr' + forum.attr('id')  + '" onclick="updateSchedule(\'' + forum.attr('id')  + '\', \'' + forum.attr('mobile_item_id') + '\', \'forum\',  \'' + forum.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + forum.attr('start_time') + '\', \'' + forum.attr('end_time') + '\', \'' + forum.attr('venue') + '\')"></a></li>';
 			}
 			$('#list-forums').html(htmlString);				
 			if ($('#list-forums').hasClass('ui-listview'))
@@ -743,6 +760,7 @@
 			}
 		}
 		
+///////////////////////////////////////////////////////////////////////////////////////////////
 		function loadForum(forumId, isLoading){	
 			if (isLoading)
 			{
@@ -764,9 +782,7 @@
 			}
 		}
 
-		function updateScheduleForums(id, pid, type, title, startTime, endTime, venue){
-		}
-		
+///////////////////////////////////////////////////////////////////////////////////////////////
 		function getSchedules(){
 			$.ajax({
 				type: "GET",
@@ -782,6 +798,7 @@
 			});
 		}
 
+///////////////////////////////////////////////////////////////////////////////////////////////
 		function getAllFilms(){
 			$.ajax({
 				type: "GET",
@@ -798,6 +815,7 @@
 			});
 		}
 
+///////////////////////////////////////////////////////////////////////////////////////////////
 		function getDVDs(){
 			$.ajax({
 				type: "GET",
@@ -814,6 +832,7 @@
 			});
 		}
 		
+///////////////////////////////////////////////////////////////////////////////////////////////
 		function getDVD(dvdId){
 			$.ajax({
 				type: "GET",
@@ -830,6 +849,7 @@
 			});
 		}
 		
+///////////////////////////////////////////////////////////////////////////////////////////////
 		function cp_schedule(){
 			$.mobile.changePage('#schedule');		
 			$.mobile.showPageLoadingMsg();
@@ -839,6 +859,7 @@
 			);
 		}
 
+///////////////////////////////////////////////////////////////////////////////////////////////
 		function getEvents(){
 			$.ajax({
 				type: "GET",
@@ -861,6 +882,7 @@
 			});
 		}
 
+///////////////////////////////////////////////////////////////////////////////////////////////
 		function loadEvents(){	
 			if (typeof special_events == 'undefined')
 			{
@@ -904,7 +926,7 @@
 				{
 					scheduledForums.push('#' + special_event.attr('id'));
 				}
-				htmlString += '<li><a href="#eventDetail" onclick="getEvent(' + special_event.attr('mobile_item_id') + ', true)">' + '<h1>' + special_event.attr('title')  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + special_event.attr('venue')  + '</small></p></a><a href="" id="se' + special_event.attr('id')  + '" onclick="updateScheduleSpecialEvents(\'' + special_event.attr('id')  + '\', \'' + special_event.attr('mobile_item_id') + '\', \'special_event\',  \'' + special_event.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + special_event.attr('start_time') + '\', \'' + special_event.attr('end_time') + '\', \'' + special_event.attr('venue') + '\')"></a></li>';
+				htmlString += '<li><a href="#eventDetail" onclick="getEvent(' + special_event.attr('mobile_item_id') + ', true)">' + '<h1>' + special_event.attr('title')  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + special_event.attr('venue')  + '</small></p></a><a href="" id="se' + special_event.attr('id')  + '" onclick="updateSchedule(\'' + special_event.attr('id')  + '\', \'' + special_event.attr('mobile_item_id') + '\', \'special_event\',  \'' + special_event.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + special_event.attr('start_time') + '\', \'' + special_event.attr('end_time') + '\', \'' + special_event.attr('venue') + '\')"></a></li>';
 			}
 			$('#list-events').html(htmlString);				
 			if ($('#list-events').hasClass('ui-listview'))
@@ -917,9 +939,7 @@
 			}
 		}
 
-		function updateScheduleSpecialEvents(id, pid, type, title, startTime, endTime, venue){
-		}
-
+///////////////////////////////////////////////////////////////////////////////////////////////
 		function getEvent(eventId, isLoading){
 			if (isLoading)
 			{
@@ -947,12 +967,14 @@
 			});
 		}
 
+///////////////////////////////////////////////////////////////////////////////////////////////
 		function loadEvent(special_event){	
 			var eventHandle = $(special_event);
 			var htmlString = '<div align="center"><h3>' + eventHandle.find('title').text().replace(/&lt;br&gt;/g, '<br />') + '</h3></div><p><small>' + eventHandle.find('description').text().replace(/&lt;br&gt;/g, '<br />').replace(/&lt;/g, '<').replace(/&gt;/g, '>') + '</small></p>';	
 			$('#content-eventDetail').html(htmlString);
 		}
 
+///////////////////////////////////////////////////////////////////////////////////////////////
 		function sortMySchedule(){
 
 			schedule['data'].sort(function(a, b){
@@ -976,6 +998,7 @@
 			});
 		}
 
+///////////////////////////////////////////////////////////////////////////////////////////////
 		function loadMySchedule(){
 			if (typeof schedule == 'undefined')
 			{
@@ -1013,7 +1036,7 @@
 				htmlString += '<li><a ';
 				if (schedule['data'][i]['type'] == 'film')
 				{
-					htmlString += ' href="#filmDetail" onclick="showFilmDetail(\'' + schedule['data'][i]['pid']  + '\', \'null\', true)"><h1>';
+					htmlString += ' href="#filmDetail" onclick="showFilmDetail(\'' + schedule['data'][i]['pid']  + '\', \'null\')"><h1>';
 				}
 				else if (schedule['data'][i]['type'] == 'special_event')
 				{
@@ -1026,7 +1049,7 @@
 				else
 				{
 					// it should never get here !!!
-					htmlString += ' href="" onclick="alert(\'No information available.\');"><h1>';
+					htmlString += ' href="" onclick="console.log(\'No information available.\');"><h1>';
 				}
 				htmlString += schedule['data'][i]['title'] + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + schedule['data'][i]['venue']  + '</small></p></a><a href="" onclick="" ></a></li>';
 			}
@@ -1072,11 +1095,12 @@
 	</div>
 
 <!-- Home Detail page-->
-	<div data-role="page" id="homeDetail" data-title="Cinequest - News" data-theme="a" data-content-theme="a" data-add-back-btn="true">
+	<div data-role="page" id="homeDetail" data-title="Cinequest - News" data-theme="a" data-content-theme="a" >
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
+			<a href="" onclick="history.go(-1);" data-icon="back">Back</a>
 			<h1>Cinequest</h1>
-			<a href="#schedule" onclick="loadMySchedule()" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
+			<a href="#schedule" onclick="loadMySchedule()" data-icon="grid" data-iconpos="right">Schedule</a>
 		</div>
 
 		<div data-role="content" id="content-homeDetail">
@@ -1143,7 +1167,7 @@
 	</div>
 
 <!-- DVDs page -->
-	<div data-role="page" id="dvds" data-title="Cinequest - DVDs" data-add-back-btn="true" data-theme="a" data-content-theme="a">
+	<div data-role="page" id="dvds" data-title="Cinequest - DVDs" data-theme="a" data-content-theme="a">
 
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
 			<h1>Cinequest</h1>
@@ -1166,11 +1190,12 @@
 	</div>
 	
 <!-- DVD Detail page -->
-	<div data-role="page" id="dvdDetail" data-title="Cinequest - Film Detail" data-add-back-btn="true" data-theme="a" data-content-theme="a">
+	<div data-role="page" id="dvdDetail" data-title="Cinequest - Film Detail" data-theme="a" data-content-theme="a">
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
+			<a href="" onclick="history.go(-1);" data-icon="back">Back</a>
 			<h1>Cinequest</h1>
-			<a href="#schedule" onclick="loadMySchedule()" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
+			<a href="#schedule" onclick="loadMySchedule()" data-icon="grid" data-iconpos="right">Schedule</a>
 		</div>
 
 		<div id="content-dvdDetail" data-role="content" style="padding: 0px 0px">
@@ -1180,11 +1205,12 @@
 	</div>
 
 <!-- FilmsDates page -->
-	<div data-role="page" id="filmsDates" data-add-back-btn="true" data-theme="a" data-content-theme="a">
+	<div data-role="page" id="filmsDates" data-theme="a" data-content-theme="a">
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
+			<a href="" onclick="history.go(-1);" data-icon="back">Back</a>
 			<h1>Cinequest</h1>
-			<a href="#schedule" onclick="loadMySchedule()" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
+			<a href="#schedule" onclick="loadMySchedule()" data-icon="grid" data-iconpos="right">Schedule</a>
 		</div>
 
 		<div data-role="content">
@@ -1200,11 +1226,12 @@
 	</div>
 
 <!-- FilmDetail page -->
-	<div data-role="page" id="filmDetail" data-title="Cinequest - Film Detail" data-add-back-btn="true" data-theme="a" data-content-theme="a">
+	<div data-role="page" id="filmDetail" data-title="Cinequest - Film Detail"  data-theme="a" data-content-theme="a">
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
+			<a href="" onclick="history.go(-1);" data-icon="back">Back</a>
 			<h1>Cinequest</h1>
-			<a href="#schedule" onclick="loadMySchedule()" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
+			<a href="#schedule" onclick="loadMySchedule()" data-icon="grid" data-iconpos="right">Schedule</a>
 		</div>
 
 		<div id="content-filmDetail" data-role="content" style="padding: 0px 0px">
@@ -1221,11 +1248,12 @@
 	</div>
 
 <!-- Forum Detail page -->
-	<div data-role="page" id="forumDetail" data-title="Cinequest - Event Detail" data-add-back-btn="true" data-theme="a" data-content-theme="a">
+	<div data-role="page" id="forumDetail" data-title="Cinequest - Event Detail"  data-theme="a" data-content-theme="a">
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
+			<a href="" onclick="history.go(-1);" data-icon="back">Back</a>
 			<h1>Cinequest</h1>
-			<a href="#schedule" onclick="loadMySchedule()" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
+			<a href="#schedule" onclick="loadMySchedule()" data-icon="grid" data-iconpos="right">Schedule</a>
 		</div>
 
 		<div id="content-forumDetail" data-role="content">
@@ -1235,11 +1263,12 @@
 	</div>
 
 <!-- Event Detail page -->
-	<div data-role="page" id="eventDetail" data-title="Cinequest - Event Detail" data-add-back-btn="true" data-theme="a" data-content-theme="a">
+	<div data-role="page" id="eventDetail" data-title="Cinequest - Event Detail"  data-theme="a" data-content-theme="a">
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
+			<a href="" onclick="history.go(-1);" data-icon="back">Back</a>
 			<h1>Cinequest</h1>
-			<a href="#schedule" onclick="loadMySchedule()" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
+			<a href="#schedule" onclick="loadMySchedule()" data-icon="grid" data-iconpos="right">Schedule</a>
 		</div>
 
 		<div id="content-eventDetail" data-role="content">
@@ -1248,11 +1277,12 @@
 	</div>
 	
 <!-- AllFilms page -->
-	<div data-role="page" id="allFilms" data-title="Cinequest - Films" data-add-back-btn="true" data-theme="a" data-content-theme="a">
+	<div data-role="page" id="allFilms" data-title="Cinequest - Films"  data-theme="a" data-content-theme="a">
 
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
+			<a href="" onclick="history.go(-1);" data-icon="back">Back</a>
 			<h1>Cinequest</h1>
-			<a href="#schedule" onclick="loadMySchedule()" class="ui-btn-right" data-icon="grid" data-iconpos="right">Schedule</a>
+			<a href="#schedule" onclick="loadMySchedule()" data-icon="grid" data-iconpos="right">Schedule</a>
 		</div>
 
 		<div data-role="content" id="content-allFilms">
@@ -1264,9 +1294,10 @@
 	</div>
 
 <!-- Schedule page -->
-	<div data-role="page" id="schedule" data-title="Cinequest - Schedule" data-add-back-btn="true"data-theme="a" data-content-theme="a">
+	<div data-role="page" id="schedule" data-title="Cinequest - Schedule" data-theme="a" data-content-theme="a">
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
+			<a href="" onclick="history.go(-1);" data-icon="back">Back</a>
 			<h1>My Cinequest<br /> Schedule</h1>
 			<a href="" class="ui-btn-right ui-disabled" onclick="deleteSchedules()" data-icon="delete" data-iconpos="right">Delete</a>
 		</div>
