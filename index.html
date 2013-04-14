@@ -46,9 +46,6 @@
 		$(function(){
 
 			proxy = "cinequestProxy.php?";
-			scheduledFilms = [];
-			scheduledForums= [];
-			scheduledEvents= [];
 			weekDay = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 			getFestival();
 			getHomeData();
@@ -330,6 +327,7 @@
 			var endTime;
 			var scheduled;
 			var htmlString = '';
+			scheduledFilms = {"data": []};
 			for (var i = 0; i < films.length; i++)
 			{
 				scheduled = false;
@@ -348,7 +346,7 @@
 				}
 				if (scheduled)
 				{
-					scheduledFilms.push('#' + films[i]['id']);
+					scheduledFilms['data'].push('#' + films[i]['id']);
 				}
 				htmlString += '<li><a href="#filmDetail" id="s' + films[i]['id'] + '" onclick="showFilmDetail(\'' + films[i]['pid']  + '\', \'null\')">' + '<h1>' + films[i]['title']  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + films[i]['venue']  + '</small></p></a><a href="" id="' + films[i]['id']  + '" onclick="updateSchedule(\'' + films[i]['id']  + '\', \'' + films[i]['pid'] + '\', \'film\',  \'' + films[i]['title'].replace(/\//g, "\\\\").replace(/'/g, "\\\'") + '\', \'' + films[i]['startTime'] + '\', \'' + films[i]['endTime'] + '\', \'' + films[i]['venue'] + '\')"></a></li>';
 			}
@@ -362,10 +360,11 @@
 			{
 				$('#list-filmsDates').trigger('create');
 			}
-			for (var i = 0; i < scheduledFilms.length; i++)
+			for (var i = 0; i < scheduledFilms['data'].length; i++)
 			{
-				$(scheduledFilms[i]).addClass('ui-btn-active');		
+				$(scheduledFilms['data'][i]).addClass('ui-btn-active');		
 			}
+			localStorage['scheduledFilms'] = JSON.stringify(scheduledFilms);
 		}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -410,6 +409,7 @@
 
 		}
 
+///////////////////////////////////////////////////////////////////////////////////////////////
 		function showMultipleFilmDetails(pid, films, tag){
 			var htmlString = '<div align="center" style="padding: 0px 10px"><h3>' + tag.find('title').text() + '</h3></div><div style="padding: 0px 10px"><p><small>' + tag.find('description').text() + '</small></p></div><div align="center" style="padding: 0px 10px"><legend><strong>' + films.length + ' films available</strong></legend><div data-role="controlgroup" data-type="horizontal">';
 			for (var i = 0; i < films.length; i++)
@@ -512,6 +512,10 @@
 			var isAdd;
 			if (type == 'film')
 			{
+				if (typeof scheduledFilms == 'undefined')
+				{
+					scheduledFilms = JSON.parse(localStorage['scheduledFilms']); 		
+				}
 				if (id.substring(0, 2) == 'fd')
 				{
 					if ($('#' + id + ' span.schedule').length == 0)
@@ -548,6 +552,42 @@
 					}
 				}
 			}		
+			else if (type == 'forum')
+			{
+				id = '#fr' + id;
+				if (typeof scheduledForums == 'undefined')
+				{
+					scheduledForums = JSON.parse(localStorage['scheduledForums']); 		
+				}
+				if ($(id).hasClass('ui-btn-active'))
+				{
+					isAdd = false;
+					$(id).removeClass('ui-btn-active');
+				}
+				else
+				{
+					isAdd = true;
+					$(id).addClass('ui-btn-active');
+				}
+			}
+			else if (type == 'special_event')
+			{
+				id = '#se' + id;
+				if (typeof scheduledEvents == 'undefined')
+				{
+					scheduledEvents = JSON.parse(localStorage['scheduledEvents']); 		
+				}
+				if ($(id).hasClass('ui-btn-active'))
+				{
+					isAdd = false;
+					$(id).removeClass('ui-btn-active');
+				}
+				else
+				{
+					isAdd = true;
+					$(id).addClass('ui-btn-active');
+				}
+			}
 			if (isAdd)
 			{
 				if (typeof schedule == 'undefined')
@@ -578,7 +618,18 @@
 				}			
 				if (type == 'film')
 				{
-					scheduledFilms.push('#' + id);
+					scheduledFilms['data'].push('#' + id, '#fd' + id);
+					localStorage['scheduledFilms'] = JSON.stringify(scheduledFilms);
+				}
+				else if (type == 'forum')
+				{
+					scheduledForums['data'].push(id);
+					localStorage['scheduledForums'] = JSON.stringify(scheduledForums);
+				}
+				else if (type == 'special_event')
+				{
+					scheduledEvents['data'].push(id);
+					localStorage['scheduledEvents'] = JSON.stringify(scheduledEvents);
 				}
 			}
 			else
@@ -593,7 +644,20 @@
 				}
 				if (type == 'film')
 				{
-					scheduledFilms.splice(scheduledFilms.indexOf('#' + id), 1);
+					scheduledFilms['data'].splice(scheduledFilms['data'].indexOf('#' + id), 1);
+					scheduledFilms['data'].splice(scheduledFilms['data'].indexOf('#fd' + id), 1);
+					localStorage['scheduledFilms'] = JSON.stringify(scheduledFilms);
+				}
+				else if (type == 'forum')
+				{
+					scheduledForums['data'].splice(scheduledForums['data'].indexOf(id), 1);
+					localStorage['scheduledForums'] = JSON.stringify(scheduledForums);
+				}
+				else if (type == 'special_event')
+				{
+					scheduledEvents['data'].splice(scheduledEvents['data'].indexOf(id), 1);
+					localStorage['scheduledEvents'] = JSON.stringify(scheduledEvents);
+						
 				}
 			}
 			loadMySchedule();
@@ -709,6 +773,7 @@
 			{
 				forums = $(localStorage['events']).find('forums').find('schedule');
 			}
+			scheduledForums = {"data": []};
 			var startTime;
 			var endTime;
 			var scheduled;
@@ -736,7 +801,7 @@
 				{
 					for (var j = 0; j < schedule['data'].length; j++)
 					{
-						if (forum.attr('id') == schedule['data'][j]['id'])
+						if ('#fr' + forum.attr('id') == schedule['data'][j]['id'])
 						{
 							scheduled = true;	
 							break;
@@ -745,7 +810,7 @@
 				}
 				if (scheduled)
 				{
-					scheduledForums.push('#' + forum.attr('id'));
+					scheduledForums['data'].push('#fr' + forum.attr('id'));
 				}
 				htmlString += '<li><a href="#forumDetail" onclick="loadForum(' + forum.attr('mobile_item_id') + ', true)">' + '<h1>' + forum.attr('title')  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + forum.attr('venue')  + '</small></p></a><a href="" id="fr' + forum.attr('id')  + '" onclick="updateSchedule(\'' + forum.attr('id')  + '\', \'' + forum.attr('mobile_item_id') + '\', \'forum\',  \'' + forum.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + forum.attr('start_time') + '\', \'' + forum.attr('end_time') + '\', \'' + forum.attr('venue') + '\')"></a></li>';
 			}
@@ -758,6 +823,11 @@
 			{
 				$('#list-forums').trigger('create');
 			}
+			for (var i = 0; i < scheduledForums['data'].length; i++)
+			{
+				$(scheduledForums['data'][i]).addClass('ui-btn-active');		
+			}
+			localStorage['scheduledForums'] = JSON.stringify(scheduledForums);
 		}
 		
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -888,6 +958,7 @@
 			{
 				special_events = $(localStorage['events']).find('special_events').find('schedule');
 			}
+			scheduledEvents = {"data": []};
 			var startTime;
 			var endTime;
 			var scheduled;
@@ -915,7 +986,7 @@
 				{
 					for (var j = 0; j < schedule['data'].length; j++)
 					{
-						if (special_event.attr('id') == schedule['data'][j]['id'])
+						if ('#se' + special_event.attr('id') == schedule['data'][j]['id'])
 						{
 							scheduled = true;	
 							break;
@@ -924,7 +995,7 @@
 				}
 				if (scheduled)
 				{
-					scheduledForums.push('#' + special_event.attr('id'));
+					scheduledEvents['data'].push('#se' + special_event.attr('id'));
 				}
 				htmlString += '<li><a href="#eventDetail" onclick="getEvent(' + special_event.attr('mobile_item_id') + ', true)">' + '<h1>' + special_event.attr('title')  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + special_event.attr('venue')  + '</small></p></a><a href="" id="se' + special_event.attr('id')  + '" onclick="updateSchedule(\'' + special_event.attr('id')  + '\', \'' + special_event.attr('mobile_item_id') + '\', \'special_event\',  \'' + special_event.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + special_event.attr('start_time') + '\', \'' + special_event.attr('end_time') + '\', \'' + special_event.attr('venue') + '\')"></a></li>';
 			}
@@ -937,6 +1008,11 @@
 			{
 				$('#list-events').trigger('create');
 			}
+			for (var i = 0; i < scheduledEvents['data'].length; i++)
+			{
+				$(scheduledEvents['data'][i]).addClass('ui-btn-active');		
+			}
+			localStorage['scheduledEvents'] = JSON.stringify(scheduledEvents);
 		}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -1040,11 +1116,11 @@
 				}
 				else if (schedule['data'][i]['type'] == 'special_event')
 				{
-							
+					htmlString += ' href="#eventDetail" onclick="getEvent(' + schedule['data'][i]['pid'] + ', true)" ><h1>';
 				}
 				else if (schedule['data'][i]['type'] == 'forum')
 				{
-						
+					htmlString += ' href="#forumDetail" onclick="loadForum(' + schedule['data'][i]['pid'] + ', true)" ><h1>';
 				}
 				else
 				{
@@ -1098,7 +1174,7 @@
 	<div data-role="page" id="homeDetail" data-title="Cinequest - News" data-theme="a" data-content-theme="a" >
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
-			<a href="" onclick="history.go(-1);" data-icon="back">Back</a>
+			<a href="" onclick="history.go(-1);" data-icon="arrow-l">Back</a>
 			<h1>Cinequest</h1>
 			<a href="#schedule" onclick="loadMySchedule()" data-icon="grid" data-iconpos="right">Schedule</a>
 		</div>
@@ -1193,7 +1269,7 @@
 	<div data-role="page" id="dvdDetail" data-title="Cinequest - Film Detail" data-theme="a" data-content-theme="a">
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
-			<a href="" onclick="history.go(-1);" data-icon="back">Back</a>
+			<a href="" onclick="history.go(-1);" data-icon="arrow-l">Back</a>
 			<h1>Cinequest</h1>
 			<a href="#schedule" onclick="loadMySchedule()" data-icon="grid" data-iconpos="right">Schedule</a>
 		</div>
@@ -1208,7 +1284,7 @@
 	<div data-role="page" id="filmsDates" data-theme="a" data-content-theme="a">
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
-			<a href="" onclick="history.go(-1);" data-icon="back">Back</a>
+			<a href="" onclick="history.go(-1);" data-icon="arrow-l">Back</a>
 			<h1>Cinequest</h1>
 			<a href="#schedule" onclick="loadMySchedule()" data-icon="grid" data-iconpos="right">Schedule</a>
 		</div>
@@ -1229,7 +1305,7 @@
 	<div data-role="page" id="filmDetail" data-title="Cinequest - Film Detail"  data-theme="a" data-content-theme="a">
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
-			<a href="" onclick="history.go(-1);" data-icon="back">Back</a>
+			<a href="" onclick="history.go(-1);" data-icon="arrow-l">Back</a>
 			<h1>Cinequest</h1>
 			<a href="#schedule" onclick="loadMySchedule()" data-icon="grid" data-iconpos="right">Schedule</a>
 		</div>
@@ -1251,7 +1327,7 @@
 	<div data-role="page" id="forumDetail" data-title="Cinequest - Event Detail"  data-theme="a" data-content-theme="a">
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
-			<a href="" onclick="history.go(-1);" data-icon="back">Back</a>
+			<a href="" onclick="history.go(-1);" data-icon="arrow-l">Back</a>
 			<h1>Cinequest</h1>
 			<a href="#schedule" onclick="loadMySchedule()" data-icon="grid" data-iconpos="right">Schedule</a>
 		</div>
@@ -1266,7 +1342,7 @@
 	<div data-role="page" id="eventDetail" data-title="Cinequest - Event Detail"  data-theme="a" data-content-theme="a">
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
-			<a href="" onclick="history.go(-1);" data-icon="back">Back</a>
+			<a href="" onclick="history.go(-1);" data-icon="arrow-l">Back</a>
 			<h1>Cinequest</h1>
 			<a href="#schedule" onclick="loadMySchedule()" data-icon="grid" data-iconpos="right">Schedule</a>
 		</div>
@@ -1280,7 +1356,7 @@
 	<div data-role="page" id="allFilms" data-title="Cinequest - Films"  data-theme="a" data-content-theme="a">
 
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
-			<a href="" onclick="history.go(-1);" data-icon="back">Back</a>
+			<a href="" onclick="history.go(-1);" data-icon="arrow-l">Back</a>
 			<h1>Cinequest</h1>
 			<a href="#schedule" onclick="loadMySchedule()" data-icon="grid" data-iconpos="right">Schedule</a>
 		</div>
@@ -1297,7 +1373,7 @@
 	<div data-role="page" id="schedule" data-title="Cinequest - Schedule" data-theme="a" data-content-theme="a">
 		
 		<div data-role="header" data-id="mainheader" data-position="fixed" data-tap-toggle="false">
-			<a href="" onclick="history.go(-1);" data-icon="back">Back</a>
+			<a href="" onclick="history.go(-1);" data-icon="arrow-l">Back</a>
 			<h1>My Cinequest<br /> Schedule</h1>
 			<a href="" class="ui-btn-right ui-disabled" onclick="deleteSchedules()" data-icon="delete" data-iconpos="right">Delete</a>
 		</div>
