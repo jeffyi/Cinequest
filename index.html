@@ -181,6 +181,7 @@ Authors:
 				var section;
 				var item;
 				var link;
+				var $listIndex = $('#list-index');
 				for (var i = 1; i < homeData.length; i++)
 				{
 					section = $(homeData[i]);
@@ -191,13 +192,13 @@ Authors:
 						htmlString += '<li><a href="#homeDetail" onclick="getHomeDetail(\'' + link.attr('id') + '\', ' + true + ')">' + item.find('title').text() + '</a></li>';
 					});
 				}
-				$('#list-index').html(htmlString);
-				if ($('#list-index').hasClass('ui-listview')){
-					$('#list-index').listview('refresh');
+				$listIndex.html(htmlString);
+				if ($listIndex.hasClass('ui-listview')){
+					$listIndex.listview('refresh');
 				}
 				else
 				{
-					$('#list-index').trigger('create');
+					$listIndex.trigger('create');
 				}
 		}
 
@@ -261,7 +262,7 @@ Authors:
 					}
 					if(localStorage['current_forum_detail']!=null)
 					{
-						loadForum(localStorage['current_forum_detail'], false);
+						loadForum(localStorage['current_forum_detail']);
 					}
 					if(localStorage['current_event_detail']!=null)
 					{
@@ -287,6 +288,7 @@ Authors:
 			var htmlString = '';
 			var tag;
 			var nextDate;
+			var $listDates = $('#list-dates');;
 			if (typeof schedules == 'undefined'){
 				schedules = $(localStorage['schedules']).find('schedule');
 			}
@@ -316,15 +318,15 @@ Authors:
 				filmsDates[dateDisplay].push({"id": tag.attr('id'), "pid": tag.attr('program_item_id'), "title": tag.attr('title'), "startTime": tag.attr('start_time'), "endTime": tag.attr('end_time'), "venue": tag.attr('venue')});
 			});
 			htmlString += '</a><span class="ui-li-count">' + count + '</span></li>';
-			$('#list-dates').html(htmlString);
+			$listDates.html(htmlString);
 			localStorage['filmsDates'] = JSON.stringify(filmsDates);
-			if ($('#list-dates').hasClass('ui-listview'))
+			if ($listDates.hasClass('ui-listview'))
 			{
-				$('#list-dates').listview('refresh');
+				$listDates.listview('refresh');
 			}
 			else
 			{
-				$('#list-dates').trigger('create');
+				$listDates.trigger('create');
 			}
 		}
 
@@ -348,6 +350,7 @@ Authors:
 			var endTime;
 			var scheduled;
 			var htmlString = '';
+			var $list_filmsDates = $('#list-filmsDates');
 			scheduledFilms = {"data": []};
 			for (var i = 0; i < films.length; i++)
 			{
@@ -372,14 +375,14 @@ Authors:
 				htmlString += '<li><a href="#filmDetail" id="s' + films[i]['id'] + '" onclick="showFilmDetail(\'' + films[i]['pid']  + '\', \'null\')">' + '<h1>' + films[i]['title']  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + films[i]['venue']  + '</small></p></a><a href="" id="' + films[i]['id']  + '" onclick="updateSchedule(\'' + films[i]['id']  + '\', \'' + films[i]['pid'] + '\', \'film\',  \'' + films[i]['title'].replace(/\//g, "\\\\").replace(/'/g, "\\\'") + '\', \'' + films[i]['startTime'] + '\', \'' + films[i]['endTime'] + '\', \'' + films[i]['venue'] + '\')"></a></li>';
 			}
 			$('#name-filmsDates').html('<h2>Films on ' + dateString  + '</h2>');
-			$('#list-filmsDates').html(htmlString);
-			if ($('#list-filmsDates').hasClass('ui-listview'))
+			$list_filmsDates.html(htmlString);
+			if ($list_filmsDates.hasClass('ui-listview'))
 			{
-				$('#list-filmsDates').listview('refresh');
+				$list_filmsDates.listview('refresh');
 			}
 			else
 			{
-				$('#list-filmsDates').trigger('create');
+				$list_filmsDates.trigger('create');
 			}
 			for (var i = 0; i < scheduledFilms['data'].length; i++)
 			{
@@ -401,6 +404,7 @@ Authors:
 			var tag;
 			var films = [];
 			var filmIndex;
+			var $div_multipleFilmDetails = $('#div-multipleFilmDetails');
 			festival_programItems.each(function(){
 				if ($(this).attr('id') == pid)
 				{
@@ -413,14 +417,14 @@ Authors:
 
 			if (films.length == 0)
 			{
-				$('#div-multipleFilmDetails').empty();
+				$div_multipleFilmDetails.empty();
 				$('#list-filmDetail').empty();
 				var htmlString ='<div align="center" style="padding: 0px 10px"><h3>' + tag.find('title').text() + '</h3></div><div style="padding: 0px 10px"><p><small>' + tag.find('description').text() + '</small></p></div>';
 				$('#top-filmDetail').html(htmlString);
 			}
 			else if (films.length == 1)
 			{
-				$('#div-multipleFilmDetails').empty();
+				$div_multipleFilmDetails.empty();
 				showSingleFilmDetail(pid, films[0], true, false);		
 			}
 			else
@@ -432,6 +436,7 @@ Authors:
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 		function showMultipleFilmDetails(pid, films, tag){
+			var $div_multipleFilmDetails = $('#div-multipleFilmDetails');
 			var htmlString = '<div align="center" style="padding: 0px 10px"><h3>' + tag.find('title').text() + '</h3></div><div style="padding: 0px 10px"><p><small>' + tag.find('description').text() + '</small></p></div><div align="center" style="padding: 0px 10px"><legend><strong>' + films.length + ' films available</strong></legend><div data-role="controlgroup" data-type="horizontal">';
 			for (var i = 0; i < films.length; i++)
 			{
@@ -447,8 +452,8 @@ Authors:
 				htmlString += '<label for="radio-filmDetail' + i + '">' + (i + 1) + '</label>';
 			}
 			htmlString += '</div></div>';
-			$('#div-multipleFilmDetails').html(htmlString);
-			$('#div-multipleFilmDetails').trigger('create');
+			$div_multipleFilmDetails.html(htmlString);
+			$div_multipleFilmDetails.trigger('create');
 			showSingleFilmDetail(pid, films[0], true, false);
 		}
 
@@ -456,7 +461,7 @@ Authors:
 		function showSingleFilmDetail(pid, filmId, refreshListview, refreshRadio){
 			localStorage['currentFilmDetail'] = pid;
 			var tag;
-
+			var $list_filmDetail = $('#list-filmDetail');
 			if (refreshRadio){
 				$('#div-multipleFilmDetails input').checkboxradio('refresh');		
 			}
@@ -514,14 +519,14 @@ Authors:
 								htmlString += '</li>';
 							}
 						});
-						$('#list-filmDetail').html(htmlString);
-						if ($('#list-filmDetail').hasClass('ui-listview'))
+						$list_filmDetail.html(htmlString);
+						if ($list_filmDetail.hasClass('ui-listview'))
 						{
-							$('#list-filmDetail').listview('refresh');
+							$list_filmDetail.listview('refresh');
 						}
 						else
 						{
-							$('#list-filmDetail').trigger('create');
+							$list_filmDetail.trigger('create');
 						}
 						return false;
 					}
@@ -685,6 +690,7 @@ Authors:
 			var htmlString = '';
 			var tag;
 			var currentSort = null;
+			var $list_allFilms = $('#list-allFilms');
 			if (typeof allFilms == 'undefined'){
 				allFilms = $(localStorage['allFilms']).find('film');
 			}
@@ -700,14 +706,14 @@ Authors:
 				}
 				htmlString += '<li><a href="#filmDetail" onclick="showFilmDetail(\'' + tag.attr('program_item_id')  + '\', \'' + tag.attr('id') + '\')">' + tag.find('title').text()  + '</a></li>';		
 			});
-			$('#list-allFilms').html(htmlString);
-			if ($('#list-allFilms').hasClass('ui-listview'))
+			$list_allFilms.html(htmlString);
+			if ($list_allFilms.hasClass('ui-listview'))
 			{
-				$('#list-allFilms').listview('refresh');		
+				$list_allFilms.listview('refresh');		
 			}
 			else
 			{
-				$('#list-allFilms').trigger('create');
+				$list_allFilms.trigger('create');
 			}
 
 		}
@@ -746,6 +752,7 @@ Authors:
 		
 ///////////////////////////////////////////////////////////////////////////////////////////////
 		function loadDVD(dvd){
+			var $content_dvdDetail = $('#content-dvdDetail');
 			var dvdHandle = $(dvd);
 			var title = $('<p/>').html(dvdHandle.find('title').text());			
 			var imageURL = dvdHandle.find('imageURL').text();
@@ -779,9 +786,9 @@ Authors:
 			var filmContentDiv = $('<div/>');
 			filmContentDiv.css('margin','0 1em 0 1em');
 			filmContentDiv.html(filmContent);
-			$('#content-dvdDetail').empty();
-			$('#content-dvdDetail').append($('<h3/>').html(filmHeader));
-			$('#content-dvdDetail').append(filmContentDiv);					
+			$content_dvdDetail.empty();
+			$content_dvdDetail.append($('<h3/>').html(filmHeader));
+			$content_dvdDetail.append(filmContentDiv);					
 		}
 		
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -800,6 +807,7 @@ Authors:
 			var dateDisplay;
 			var forum;
 			var htmlString = '';
+			var $list_forums = $('#list-forums');
 			for (var i = 0; i < forums.length; i++)
 			{
 				forum = $(forums[i]);
@@ -829,16 +837,16 @@ Authors:
 				{
 					scheduledForums['data'].push('#fr' + forum.attr('id'));
 				}
-				htmlString += '<li><a href="#forumDetail" onclick="loadForum(' + forum.attr('mobile_item_id') + ', true)">' + '<h1>' + forum.attr('title')  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + forum.attr('venue')  + '</small></p></a><a href="" id="fr' + forum.attr('id')  + '" onclick="updateSchedule(\'' + forum.attr('id')  + '\', \'' + forum.attr('mobile_item_id') + '\', \'forum\',  \'' + forum.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + forum.attr('start_time') + '\', \'' + forum.attr('end_time') + '\', \'' + forum.attr('venue') + '\')"></a></li>';
+				htmlString += '<li><a href="#forumDetail" onclick="loadForum(' + forum.attr('mobile_item_id') + ')">' + '<h1>' + forum.attr('title')  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + forum.attr('venue')  + '</small></p></a><a href="" id="fr' + forum.attr('id')  + '" onclick="updateSchedule(\'' + forum.attr('id')  + '\', \'' + forum.attr('mobile_item_id') + '\', \'forum\',  \'' + forum.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + forum.attr('start_time') + '\', \'' + forum.attr('end_time') + '\', \'' + forum.attr('venue') + '\')"></a></li>';
 			}
-			$('#list-forums').html(htmlString);				
-			if ($('#list-forums').hasClass('ui-listview'))
+			$list_forums.html(htmlString);				
+			if ($list_forums.hasClass('ui-listview'))
 			{
-				$('#list-forums').listview('refresh');		
+				$list_forums.listview('refresh');		
 			}
 			else
 			{
-				$('#list-forums').trigger('create');
+				$list_forums.trigger('create');
 			}
 			for (var i = 0; i < scheduledForums['data'].length; i++)
 			{
@@ -848,25 +856,16 @@ Authors:
 		}
 		
 ///////////////////////////////////////////////////////////////////////////////////////////////
-		function loadForum(forumId, isLoading){	
-			if (isLoading)
-			{
-				$('body').addClass('ui-loading');
-			}
+		function loadForum(forumId){	
 			localStorage['current_forum_detail'] = forumId;
 			if(festival==null)
 			{
 				festival=localStorage['festival'];
 			}
 			var forum = $(festival).find('program_item[id='+forumId+']');
-			$('#content-forumDetail').empty();
 			var dvdHandle = $(forum);
 			var htmlString = '<div align="center"><h3>' + dvdHandle.find('title').text() + '</div><p><small>' + dvdHandle.find('description').text() + '</small></p>';	
-			$('#content-forumDetail').html(htmlString);	
-			if (isLoading)
-			{
-				$('body').removeClass('ui-loading');
-			}
+			$('#content-forumDetail').empty().html(htmlString);	
 		}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -985,6 +984,7 @@ Authors:
 			var dateDisplay;
 			var special_event;
 			var htmlString = '';
+			var $list_events = $('#list-events');
 			for (var i = 0; i < special_events.length; i++)
 			{
 				special_event = $(special_events[i]);
@@ -1016,14 +1016,14 @@ Authors:
 				}
 				htmlString += '<li><a href="#eventDetail" onclick="getEvent(' + special_event.attr('mobile_item_id') + ', true)">' + '<h1>' + special_event.attr('title')  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + special_event.attr('venue')  + '</small></p></a><a href="" id="se' + special_event.attr('id')  + '" onclick="updateSchedule(\'' + special_event.attr('id')  + '\', \'' + special_event.attr('mobile_item_id') + '\', \'special_event\',  \'' + special_event.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + special_event.attr('start_time') + '\', \'' + special_event.attr('end_time') + '\', \'' + special_event.attr('venue') + '\')"></a></li>';
 			}
-			$('#list-events').html(htmlString);				
-			if ($('#list-events').hasClass('ui-listview'))
+			$list_events.html(htmlString);				
+			if ($list_events.hasClass('ui-listview'))
 			{
-				$('#list-events').listview('refresh');	
+				$list_events.listview('refresh');	
 			}
 			else
 			{
-				$('#list-events').trigger('create');
+				$list_events.trigger('create');
 			}
 			for (var i = 0; i < scheduledEvents['data'].length; i++)
 			{
@@ -1119,6 +1119,7 @@ Authors:
 			var currentDate = '';
 			var pureId;
 			var scheduleId;
+			var $list_schedule = $('#list-schedule');
 			for (var i = 0; i < schedule['data'].length; i++)
 			{
 				nextDate = schedule['data'][i]['startTime'].split(' ')[0];
@@ -1142,7 +1143,7 @@ Authors:
 				}
 				else if (schedule['data'][i]['type'] == 'forum')
 				{
-					htmlString += ' href="#forumDetail" onclick="loadForum(' + schedule['data'][i]['pid'] + ', true)" ><h1>';
+					htmlString += ' href="#forumDetail" onclick="loadForum(' + schedule['data'][i]['pid'] + ')" ><h1>';
 				}
 				else
 				{
@@ -1153,14 +1154,14 @@ Authors:
 				scheduleId = 'sc' + schedule['data'][i]['id'].replace('#', '');
 				htmlString += schedule['data'][i]['title'] + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + schedule['data'][i]['venue']  + '</small></p></a><a id="' + scheduleId + '" href="" onclick="editScheduleItem(\'' + schedule['data'][i]['type'] + '\', \'' + pureId + '\', \'' + scheduleId + '\')" ></a></li>';
 			}
-			$('#list-schedule').html(htmlString);
-			if ($('#list-schedule').hasClass('ui-listview'))
+			$list_schedule.html(htmlString);
+			if ($list_schedule.hasClass('ui-listview'))
 			{
-				$('#list-schedule').listview('refresh');		
+				$list_schedule.listview('refresh');		
 			}
 			else
 			{
-				$('#list-schedule').trigger('create');
+				$list_schedule.trigger('create');
 			}
 		}
 
