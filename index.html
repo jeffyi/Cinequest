@@ -57,12 +57,15 @@ Authors:
 		var weekDay;
 		var festival_films;
 		var festival_programItems;
-		var scheduledFilms;
-		var scheduledForums;
-		var scheduledEvents;
 		var ssi;				// selected schedule items array
 		var baa;				// buttons with theme a array
 		var sbaa;				// buttons in schedule page with theme a array	
+		var $filmsTab;
+		var $eventsTab;
+		var $forumsTab;
+		var $films;
+		var $events;
+		var $forums;
 		
 		$(function(){
 
@@ -74,6 +77,12 @@ Authors:
 			getAllFilms();			
 			getDVDs();
 			getEvents();
+			$filmsTab = $('#filmsTab');
+			$eventsTab = $('#eventsTab');
+			$forumsTab = $('#forumsTab');
+			$films = $('#films');
+			$events = $('#events');
+			$forums = $('#forums');
 
 			if (typeof localStorage['selectedTab'] != 'undefined')
 			{
@@ -90,73 +99,78 @@ Authors:
 			}
 
 			$('#festival').on('pageshow', function(){
-				if (selectedTab == -1 || selectedTab == 0)
-				{
-					$('#filmsTab').attr('checked', true).checkboxradio('refresh');
-					$('#eventsTab').attr('checked', false).checkboxradio('refresh');
-					$('#forumsTab').attr('checked', false).checkboxradio('refresh');
-					$('#events').hide();
-					$('#forums').hide();
-					$('#films').show();
-					selectedTab = 0;
-					localStorage['selectedTab'] = selectedTab;
-				}
-				else if (selectedTab == 1)
-				{
-					$('#eventsTab').attr('checked', true).checkboxradio('refresh');
-					$('#filmsTab').attr('checked', false).checkboxradio('refresh');
-					$('#forumsTab').attr('checked', false).checkboxradio('refresh');
-					$('#films').hide();
-					$('#forums').hide();
-					$('#events').show();
-					selectedTab = 1;
-					localStorage['selectedTab'] = selectedTab;
-				}
-				else if (selectedTab == 2)
-				{
-					$('#forumsTab').attr('checked', true).checkboxradio('refresh');
-					$('#eventsTab').attr('checked', false).checkboxradio('refresh');
-					$('#filmsTab').attr('checked', false).checkboxradio('refresh');
-					$('#films').hide();
-					$('#events').hide();
-					$('#forums').show();
-					selectedTab = 2;
-					localStorage['selectedTab'] = selectedTab;
-					
-				}
+				showSelectedTab();
 			});
 
-			$('#filmsTab').click(function(){
-				$('#events').hide();
-				$('#forums').hide();
-				$('#films').show();
+			$filmsTab.click(function(){
+				$events.hide();
+				$forums.hide();
+				$films.show();
 				selectedTab = 0;
 				localStorage['selectedTab'] = selectedTab;
-				$('#filmsTab').attr('checked', true).checkboxradio('refresh');
-				$('#eventsTab').attr('checked', false).checkboxradio('refresh');
-				$('#forumsTab').attr('checked', false).checkboxradio('refresh');
+				$filmsTab.attr('checked', true).checkboxradio('refresh');
+				$eventsTab.attr('checked', false).checkboxradio('refresh');
+				$forumsTab.attr('checked', false).checkboxradio('refresh');
 			});
-			$('#eventsTab').click(function(){
-				$('#films').hide();
-				$('#forums').hide();
-				$('#events').show();
+			$eventsTab.click(function(){
+				$films.hide();
+				$forums.hide();
+				$events.show();
 				selectedTab = 1;
 				localStorage['selectedTab'] = selectedTab;
-				$('#eventsTab').attr('checked', true).checkboxradio('refresh');
-				$('#filmsTab').attr('checked', false).checkboxradio('refresh');
-				$('#forumsTab').attr('checked', false).checkboxradio('refresh');
+				$eventsTab.attr('checked', true).checkboxradio('refresh');
+				$filmsTab.attr('checked', false).checkboxradio('refresh');
+				$forumsTab.attr('checked', false).checkboxradio('refresh');
 			});
-			$('#forumsTab').click(function(){
-				$('#events').hide();
-				$('#films').hide();
-				$('#forums').show();
+			$forumsTab.click(function(){
+				$events.hide();
+				$films.hide();
+				$forums.show();
 				selectedTab = 2;
 				localStorage['selectedTab'] = selectedTab;
-				$('#forumsTab').attr('checked', true).checkboxradio('refresh');
-				$('#eventsTab').attr('checked', false).checkboxradio('refresh');
-				$('#filmsTab').attr('checked', false).checkboxradio('refresh');
+				$forumsTab.attr('checked', true).checkboxradio('refresh');
+				$eventsTab.attr('checked', false).checkboxradio('refresh');
+				$filmsTab.attr('checked', false).checkboxradio('refresh');
 			});
 		});
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+		function showSelectedTab(){
+			if (selectedTab == -1 || selectedTab == 0)
+			{
+				$filmsTab.attr('checked', true).checkboxradio('refresh');
+				$eventsTab.attr('checked', false).checkboxradio('refresh');
+				$forumsTab.attr('checked', false).checkboxradio('refresh');
+				$events.hide();
+				$forums.hide();
+				$films.show();
+				selectedTab = 0;
+				localStorage['selectedTab'] = selectedTab;
+			}
+			else if (selectedTab == 1)
+			{
+				$eventsTab.attr('checked', true).checkboxradio('refresh');
+				$filmsTab.attr('checked', false).checkboxradio('refresh');
+				$forumsTab.attr('checked', false).checkboxradio('refresh');
+				$films.hide();
+				$forums.hide();
+				$events.show();
+				selectedTab = 1;
+				localStorage['selectedTab'] = selectedTab;
+			}
+			else if (selectedTab == 2)
+			{
+				$forumsTab.attr('checked', true).checkboxradio('refresh');
+				$eventsTab.attr('checked', false).checkboxradio('refresh');
+				$filmsTab.attr('checked', false).checkboxradio('refresh');
+				$films.hide();
+				$events.hide();
+				$forums.show();
+				selectedTab = 2;
+				localStorage['selectedTab'] = selectedTab;
+				
+			}
+		}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 		function getHomeData(){
@@ -207,7 +221,7 @@ Authors:
 			localStorage['currentHomeDetail'] = pid;
 			$('#content-homeDetail').empty();
 			if (isLoading){
-				$('body').addClass('ui-loading');
+				$('#body').addClass('ui-loading');
 			}
 			$.ajax({
 				type: "GET",
@@ -221,7 +235,7 @@ Authors:
 				},
 				complete: function (xhr){
 					if (isLoading){
-						$('body').removeClass('ui-loading');
+						$('#body').removeClass('ui-loading');
 					}
 				}
 
@@ -234,7 +248,7 @@ Authors:
 				type: "GET",
 				url: proxy + "type=festival",
 				beforeSend: function(xhr){
-					$('body').addClass('ui-loading');		
+					$('#body').addClass('ui-loading');		
 				},
 				success: function(xml){
 					festival = xml;
@@ -274,7 +288,7 @@ Authors:
 					console.log('ajax failed for festival:' + xhr.statusText);
 				},
 				complete: function(xhr){
-					$('body').removeClass('ui-loading');
+					$('#body').removeClass('ui-loading');
 				}
 			});
 		}
@@ -351,7 +365,7 @@ Authors:
 			var scheduled;
 			var htmlString = '';
 			var $list_filmsDates = $('#list-filmsDates');
-			scheduledFilms = {"data": []};
+			var scheduledFilms = [];
 			for (var i = 0; i < films.length; i++)
 			{
 				scheduled = false;
@@ -370,7 +384,7 @@ Authors:
 				}
 				if (scheduled)
 				{
-					scheduledFilms['data'].push('#' + films[i]['id']);
+					scheduledFilms.push('#' + films[i]['id']);
 				}
 				htmlString += '<li><a href="#filmDetail" id="s' + films[i]['id'] + '" onclick="showFilmDetail(\'' + films[i]['pid']  + '\', \'null\')">' + '<h1>' + films[i]['title']  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + films[i]['venue']  + '</small></p></a><a href="" id="' + films[i]['id']  + '" onclick="updateSchedule(\'' + films[i]['id']  + '\', \'' + films[i]['pid'] + '\', \'film\',  \'' + films[i]['title'].replace(/\//g, "\\\\").replace(/'/g, "\\\'") + '\', \'' + films[i]['startTime'] + '\', \'' + films[i]['endTime'] + '\', \'' + films[i]['venue'] + '\')"></a></li>';
 			}
@@ -384,11 +398,10 @@ Authors:
 			{
 				$list_filmsDates.trigger('create');
 			}
-			for (var i = 0; i < scheduledFilms['data'].length; i++)
+			for (var i = 0; i < scheduledFilms.length; i++)
 			{
-				$(scheduledFilms['data'][i]).addClass('ui-btn-active');		
+				$(scheduledFilms[i]).addClass('ui-btn-active');		
 			}
-			localStorage['scheduledFilms'] = JSON.stringify(scheduledFilms);
 		}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -525,10 +538,6 @@ Authors:
 			var isAdd;
 			if (type == 'film')
 			{
-				if (typeof scheduledFilms == 'undefined')
-				{
-					scheduledFilms = JSON.parse(localStorage['scheduledFilms']); 		
-				}
 				if (id.substring(0, 2) == 'fd')
 				{
 					if ($('#' + id + ' span.schedule').length == 0)
@@ -564,10 +573,6 @@ Authors:
 			else if (type == 'forum')
 			{
 				id = '#fr' + id;
-				if (typeof scheduledForums == 'undefined')
-				{
-					scheduledForums = JSON.parse(localStorage['scheduledForums']); 		
-				}
 				if ($(id).hasClass('ui-btn-active'))
 				{
 					isAdd = false;
@@ -582,10 +587,6 @@ Authors:
 			else if (type == 'special_event')
 			{
 				id = '#se' + id;
-				if (typeof scheduledEvents == 'undefined')
-				{
-					scheduledEvents = JSON.parse(localStorage['scheduledEvents']); 		
-				}
 				if ($(id).hasClass('ui-btn-active'))
 				{
 					isAdd = false;
@@ -625,21 +626,6 @@ Authors:
 					});
 					localStorage['schedule'] = JSON.stringify(schedule);
 				}			
-				if (type == 'film')
-				{
-					scheduledFilms['data'].push('#' + id, '#fd' + id);
-					localStorage['scheduledFilms'] = JSON.stringify(scheduledFilms);
-				}
-				else if (type == 'forum')
-				{
-					scheduledForums['data'].push(id);
-					localStorage['scheduledForums'] = JSON.stringify(scheduledForums);
-				}
-				else if (type == 'special_event')
-				{
-					scheduledEvents['data'].push(id);
-					localStorage['scheduledEvents'] = JSON.stringify(scheduledEvents);
-				}
 			}
 			else
 			{
@@ -650,23 +636,6 @@ Authors:
 						schedule['data'].splice(i, 1);
 						localStorage['schedule'] = JSON.stringify(schedule);
 					}
-				}
-				if (type == 'film')
-				{
-					scheduledFilms['data'].splice(scheduledFilms['data'].indexOf('#' + id), 1);
-					scheduledFilms['data'].splice(scheduledFilms['data'].indexOf('#fd' + id), 1);
-					localStorage['scheduledFilms'] = JSON.stringify(scheduledFilms);
-				}
-				else if (type == 'forum')
-				{
-					scheduledForums['data'].splice(scheduledForums['data'].indexOf(id), 1);
-					localStorage['scheduledForums'] = JSON.stringify(scheduledForums);
-				}
-				else if (type == 'special_event')
-				{
-					scheduledEvents['data'].splice(scheduledEvents['data'].indexOf(id), 1);
-					localStorage['scheduledEvents'] = JSON.stringify(scheduledEvents);
-						
 				}
 			}
 			loadMySchedule();
@@ -707,48 +676,37 @@ Authors:
 		
 ///////////////////////////////////////////////////////////////////////////////////////////////
 		function loadDVDs(dvds){	
-			var lastSort='0'
-			$(dvds).find('film').each(function(index){
-				var item = $('<li/>');
-				var link = $('<a/>');
-				var tag = $(this);
-				var id = tag.attr('id');	
-				var sort = tag.attr('sort');
-				var title = tag.find('title').text();
-				link.html(title);
-				link.attr('href','#dvdDetail');
-				(function(filmId){
-					link.click(function(){
-						
-						getDVD(filmId);
-					});
-				})(id);
-				
-				item.html(link);
-				if(sort!=lastSort){
-					var divider = $('<li/>');
-					divider.attr('data-role','list-divider');
-					divider.html(sort);
-					$('#list-dvds').append(divider);	
+			var lastSort='';
+			var tag;
+			var htmlString = '';
+			var sort;
+			var $list_dvds = $('#list-dvds');
+			$(dvds).find('film').each(function(){
+				tag = $(this);
+				sort = tag.attr('sort');
+				if (sort != lastSort)
+				{
+					htmlString += '<li data-role="list-divider">' + sort + '</li>';		
 					lastSort = sort;
 				}
-				$('#list-dvds').append(item);				
+				htmlString += '<li><a onclick="getDVD(\'' + tag.attr('id') + '\', true)" href="#dvdDetail">' + tag.find('title').text() + '</a></li>';
 			});
-			$('#list-dvds:visible').listview('refresh');			
+			$list_dvds.html(htmlString);
+			if ($list_dvds.hasClass('ui-listview'))
+			{
+				$list_dvds.listview('refresh');	
+			}
+			else
+			{
+				$list_dvds.trigger('create');	
+			}
 		}
 		
 ///////////////////////////////////////////////////////////////////////////////////////////////
 		function loadDVD(dvd){
-			var $content_dvdDetail = $('#content-dvdDetail');
 			var dvdHandle = $(dvd);
-			var title = $('<p/>').html(dvdHandle.find('title').text());			
+			var title = dvdHandle.find('title').text();			
 			var imageURL = dvdHandle.find('imageURL').text();
-			var image = $('<img/>').attr('src',imageURL);
-			image.css('max-width','100%');
-			var filmHeader = $('<div/>');
-			filmHeader.css('text-align','center');
-			filmHeader.append($('<div/>').html(title));
-			filmHeader.append($('<div/>').html(image));
 			var description = dvdHandle.find('description').text();			
 			var director = dvdHandle.find('director').text();
 			var producer = dvdHandle.find('producer').text();			
@@ -759,23 +717,8 @@ Authors:
 			var language = dvdHandle.find('language').text();
 			var genre = dvdHandle.find('genre').text();
 			var film_info = dvdHandle.find('film_info').text();
-			var filmContent = $('<small/>');
-			filmContent.append($('<p/>').html(description));
-			filmContent.append($('<div/>').html('<strong>Director: </strong>'+director));
-			filmContent.append($('<div/>').html('<strong>Producer: </strong>'+producer));
-			filmContent.append($('<div/>').html('<strong>Editor: </strong>'+editor));
-			filmContent.append($('<div/>').html('<strong>Writer: </strong>'+writer));
-			filmContent.append($('<div/>').html('<strong>Cast: </strong>'+cast));
-			filmContent.append($('<div/>').html('<strong>Country: </strong>'+country));
-			filmContent.append($('<div/>').html('<strong>Language: </strong>'+language));
-			filmContent.append($('<div/>').html('<strong>Genre: </strong>'+genre));
-			filmContent.append($('<div/>').html('<strong>Film Info: </strong>'+film_info));
-			var filmContentDiv = $('<div/>');
-			filmContentDiv.css('margin','0 1em 0 1em');
-			filmContentDiv.html(filmContent);
-			$content_dvdDetail.empty();
-			$content_dvdDetail.append($('<h3/>').html(filmHeader));
-			$content_dvdDetail.append(filmContentDiv);					
+			var htmlString = '<h3 style="text-align: center">' + title + '</h3><div align="center"><img src="' + imageURL + '" style="max-width: 100%" /></div><p><small>' + description + '</small></p><p><small><strong>Director: </strong>'+ director + '<br /><strong>Producer: </strong>' + producer + '<br /><strong>Editor: </strong>' + editor + '<br /><strong>Writer: </strong>' + writer + '<br /><strong>Cast: </strong>' + cast + '<br /><strong>Country: </strong>' + country + '<br /><strong>Language: </strong>' + language + '<br /><strong>Genre: </strong>' + genre + '<br /><strong>Film Info: </strong>' + film_info + '<br /></small></p>';
+			$('#content-dvdDetail').html(htmlString);					
 		}
 		
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -784,7 +727,7 @@ Authors:
 			{
 				forums = $(localStorage['events']).find('forums').find('schedule');
 			}
-			scheduledForums = {"data": []};
+			var scheduledForums = [];
 			var startTime;
 			var endTime;
 			var scheduled;
@@ -822,7 +765,7 @@ Authors:
 				}
 				if (scheduled)
 				{
-					scheduledForums['data'].push('#fr' + forum.attr('id'));
+					scheduledForums.push('#fr' + forum.attr('id'));
 				}
 				htmlString += '<li><a href="#forumDetail" onclick="loadForum(' + forum.attr('mobile_item_id') + ')">' + '<h1>' + forum.attr('title')  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + forum.attr('venue')  + '</small></p></a><a href="" id="fr' + forum.attr('id')  + '" onclick="updateSchedule(\'' + forum.attr('id')  + '\', \'' + forum.attr('mobile_item_id') + '\', \'forum\',  \'' + forum.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + forum.attr('start_time') + '\', \'' + forum.attr('end_time') + '\', \'' + forum.attr('venue') + '\')"></a></li>';
 			}
@@ -835,11 +778,10 @@ Authors:
 			{
 				$list_forums.trigger('create');
 			}
-			for (var i = 0; i < scheduledForums['data'].length; i++)
+			for (var i = 0; i < scheduledForums.length; i++)
 			{
-				$(scheduledForums['data'][i]).addClass('ui-btn-active');		
+				$(scheduledForums[i]).addClass('ui-btn-active');		
 			}
-			localStorage['scheduledForums'] = JSON.stringify(scheduledForums);
 		}
 		
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -906,19 +848,31 @@ Authors:
 		}
 		
 ///////////////////////////////////////////////////////////////////////////////////////////////
-		function getDVD(dvdId){
+		function getDVD(dvdId, isLoading){
+			$('#content-dvdDetail').empty();
+			if (isLoading)
+			{
+				$('#body').addClass('ui-loading');		
+			}
 			$.ajax({
 				type: "GET",
 				url: proxy + "type=dvd&id="+dvdId,
 				success: function(xml){
 					var dvd = xml;
-					localStorage['current_dvd_detail']=xml;
-					console.log('ajax success for dvds');
+					localStorage['current_dvd_detail'] = xml;
+					console.log('ajax success for dvd');
 					loadDVD(dvd);
 				},
 				error: function(xhr){
 					console.log('ajax failed for DVD' + xhr.statusText);		
+				},
+				complete: function(xhr){
+					if (isLoading)
+					{
+						$('#body').removeClass('ui-loading');		
+					}
 				}
+
 			});
 		}
 		
@@ -961,7 +915,7 @@ Authors:
 			{
 				special_events = $(localStorage['events']).find('special_events').find('schedule');
 			}
-			scheduledEvents = {"data": []};
+			var scheduledEvents = [];
 			var startTime;
 			var endTime;
 			var scheduled;
@@ -999,7 +953,7 @@ Authors:
 				}
 				if (scheduled)
 				{
-					scheduledEvents['data'].push('#se' + special_event.attr('id'));
+					scheduledEvents.push('#se' + special_event.attr('id'));
 				}
 				htmlString += '<li><a href="#eventDetail" onclick="getEvent(' + special_event.attr('mobile_item_id') + ', true)">' + '<h1>' + special_event.attr('title')  + '</h1><p><small>' + convertTime(startTime[0], startTime[1]) + ' - ' + convertTime(endTime[0], endTime[1]) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Venue: ' + special_event.attr('venue')  + '</small></p></a><a href="" id="se' + special_event.attr('id')  + '" onclick="updateSchedule(\'' + special_event.attr('id')  + '\', \'' + special_event.attr('mobile_item_id') + '\', \'special_event\',  \'' + special_event.attr('title').replace("\\", "\\\\").replace("'", "\\\'") + '\', \'' + special_event.attr('start_time') + '\', \'' + special_event.attr('end_time') + '\', \'' + special_event.attr('venue') + '\')"></a></li>';
 			}
@@ -1012,18 +966,17 @@ Authors:
 			{
 				$list_events.trigger('create');
 			}
-			for (var i = 0; i < scheduledEvents['data'].length; i++)
+			for (var i = 0; i < scheduledEvents.length; i++)
 			{
-				$(scheduledEvents['data'][i]).addClass('ui-btn-active');		
+				$(scheduledEvents[i]).addClass('ui-btn-active');		
 			}
-			localStorage['scheduledEvents'] = JSON.stringify(scheduledEvents);
 		}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 		function getEvent(eventId, isLoading){
 			if (isLoading)
 			{
-				$('body').addClass('ui-loading');		
+				$('#body').addClass('ui-loading');		
 			}
 			localStorage['current_event_detail'] = eventId;
 			$('#content-eventDetail').empty();
@@ -1041,7 +994,7 @@ Authors:
 				complete: function(xhr){
 					if (isLoading)
 					{
-						$('body').removeClass('ui-loading');		
+						$('#body').removeClass('ui-loading');		
 					}
 				}
 			});
@@ -1083,6 +1036,7 @@ Authors:
 			baa = [];
 			sbaa = [];
 			ssi = [];
+			$('#schedule-options').hide();
 			if (typeof schedule == 'undefined')
 			{
 				$('#list-schedule').empty();
@@ -1272,7 +1226,7 @@ Authors:
 	</script>
 </head>
 
-<body>
+<body id="body">
 <!-- Index page -->
 	<div data-role="page" id="index" data-title="Cinequest - Home" data-theme="a" data-content-theme="a">
 
@@ -1403,7 +1357,7 @@ Authors:
 			<a href="#schedule" onclick="loadMySchedule()" data-icon="grid" data-iconpos="right">Schedule</a>
 		</div>
 
-		<div id="content-dvdDetail" data-role="content" style="padding: 0px 0px">
+		<div id="content-dvdDetail" data-role="content">
 
 		</div>
 
