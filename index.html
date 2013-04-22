@@ -71,18 +71,18 @@ Authors:
 
 			proxy = "cinequestProxy.php?";
 			weekDay = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-			getFestival();
-			getHomeData();
-			getSchedules();
-			getAllFilms();			
-			getDVDs();
-			getEvents();
 			$filmsTab = $('#filmsTab');
 			$eventsTab = $('#eventsTab');
 			$forumsTab = $('#forumsTab');
 			$films = $('#films');
 			$events = $('#events');
 			$forums = $('#forums');
+			getFestival();
+			getHomeData();
+			getSchedules();
+			getAllFilms();			
+			getDVDs();
+			getEvents();
 
 			if (typeof localStorage['selectedTab'] != 'undefined')
 			{
@@ -183,7 +183,8 @@ Authors:
 					loadHomeData();
 				},
 				error: function(xhr){
-					console.log('ajax failed for homeData');
+					console.log('ajax failed for homeData, retrying...');
+					getHomeData();
 				}
 			});
 		}
@@ -285,7 +286,8 @@ Authors:
 					loadMySchedule();
 				},
 				error: function(xhr){
-					console.log('ajax failed for festival:' + xhr.statusText);
+					console.log('ajax failed for festival, retrying...');
+					getFestival();
 				},
 				complete: function(xhr){
 					$('#body').removeClass('ui-loading');
@@ -808,7 +810,8 @@ Authors:
 					console.log('ajax success for schedules');
 				},
 				error: function(xhr){
-					console.log('ajax failed for schedules' + xhr.statusText);		
+					console.log('ajax failed for schedules, retrying...');	
+					getSchedules();
 				}
 			});
 		}
@@ -825,7 +828,8 @@ Authors:
 
 				},
 				error: function(xhr){
-					console.log('ajax failed for all films')
+					console.log('ajax failed for all films, retrying...');
+					getAllFilms();
 				}
 			});
 		}
@@ -842,7 +846,8 @@ Authors:
 					loadDVDs(dvds);
 				},
 				error: function(xhr){
-					console.log('ajax failed for DVDs' + xhr.statusText);		
+					console.log('ajax failed for DVDs, retrying...');		
+					getDVDs();
 				}
 			});
 		}
@@ -864,7 +869,7 @@ Authors:
 					loadDVD(dvd);
 				},
 				error: function(xhr){
-					console.log('ajax failed for DVD' + xhr.statusText);		
+					console.log('ajax failed for DVD');
 				},
 				complete: function(xhr){
 					if (isLoading)
@@ -902,7 +907,8 @@ Authors:
 					loadForums();
 				},
 				error: function(xhr){
-					console.log('ajax failed for events:' + xhr.statusText);
+					console.log('ajax failed for events, retrying...');
+					getEvents();
 				},
 				complete: function(xhr){
 				}
@@ -989,7 +995,7 @@ Authors:
 					loadEvent(xml);
 				},
 				error: function(xhr){
-					console.log('ajax failed for events:' + xhr.statusText);
+					console.log('ajax failed for events');
 				},
 				complete: function(xhr){
 					if (isLoading)
