@@ -1035,17 +1035,36 @@ Authors:
 			baa = [];
 			sbaa = [];
 			ssi = [];
+			var $list_schedule = $('#list-schedule');
 			$('#schedule-options').hide();
 			if (typeof schedule == 'undefined')
 			{
-				$('#list-schedule').empty();
+				$list_schedule.empty();
 				$('#schedule-noContent').show();
+				$list_schedule.html(htmlString);
+				if ($list_schedule.hasClass('ui-listview'))
+				{
+					$list_schedule.listview('refresh');		
+				}
+				else
+				{
+					$list_schedule.trigger('create');
+				}
 				return;
 			}
 			if (schedule['data'].length == 0)
 			{
-				$('#list-schedule').empty();
+				$list_schedule.empty();
 				$('#schedule-noContent').show();
+				$list_schedule.html(htmlString);
+				if ($list_schedule.hasClass('ui-listview'))
+				{
+					$list_schedule.listview('refresh');		
+				}
+				else
+				{
+					$list_schedule.trigger('create');
+				}
 				return;
 			}
 			$('#schedule-noContent').hide();
@@ -1059,7 +1078,6 @@ Authors:
 			var currentDate = '';
 			var pureId;
 			var scheduleId;
-			var $list_schedule = $('#list-schedule');
 			for (var i = 0; i < schedule['data'].length; i++)
 			{
 				nextDate = schedule['data'][i]['startTime'].split(' ')[0];
